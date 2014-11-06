@@ -37,12 +37,19 @@ int main(int argc, char **argv)
 	std::string str2 = luaState["j"][2];
 	std::string str3 = luaState["j"][3];
 	
+	std::vector<int> nums = luaState["nums"];
+	
+	std::map<std::string, int> strNums = luaState["map"];
+	
 	luaState["printSomething"](5, 3, 2);
 	
 	std::cout << str0 << '\n';
 	std::cout << str1 << '\n';
 	std::cout << str2 << '\n';
 	std::cout << str3 << '\n';
+	
+	for(auto& n : nums)
+		std::cout << "Num: " << n << '\n';
 	
 	return 0;
 }

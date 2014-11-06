@@ -6,6 +6,10 @@ for i, v in ipairs(j) do
 	print(v)
 end
 
+nums = {3, 2, 1}
+
+map = {"hi" = 5, "world" = 3}
+
 print(m.first)
 print(m.second)
 

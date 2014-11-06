@@ -13,14 +13,12 @@ namespace lpp
 	{
 		public:
 			Function(const std::function<Ret(Args...)>& f)
-			:	baseFunction([](lua_State* state)
+			:	baseFunction([&](lua_State* state)
 				{
 					return sizeof...(Args);
 				}),
 				function(f)
-			{
-				
-			}
+			{}
 			
 			~Function();
 			

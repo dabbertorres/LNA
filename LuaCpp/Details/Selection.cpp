@@ -18,31 +18,31 @@ namespace lpp
 	{}
 	
 	// primitive assignment
-	void Selection::operator=(bool b)
+	void Selection::operator =(bool b)
 	{
 		lua_pushboolean(state, b);
 		lua_setglobal(state, name.c_str());
 	}
 	
-	void Selection::operator=(int i)
+	void Selection::operator =(int i)
 	{
 		lua_pushinteger(state, i);
 		lua_setglobal(state, name.c_str());
 	}
 	
-	void Selection::operator=(unsigned int ui)
+	void Selection::operator =(unsigned int ui)
 	{
 		lua_pushunsigned(state, ui);
 		lua_setglobal(state, name.c_str());
 	}
 	
-	void Selection::operator=(lua_Number n)
+	void Selection::operator =(lua_Number n)
 	{
 		lua_pushnumber(state, n);
 		lua_setglobal(state, name.c_str());
 	}
 	
-	void Selection::operator=(const std::string& s)
+	void Selection::operator =(const std::string& s)
 	{
 		lua_pushlstring(state, s.c_str(), s.size());
 		lua_setglobal(state, name.c_str());
@@ -51,7 +51,7 @@ namespace lpp
 	// vector to table assignment
 	// "i + 1" in following functions is to convert to Lua's tables starting at 1, not 0
 	template<>
-	void Selection::operator=(const std::vector<bool>& vec)
+	void Selection::operator =(const std::vector<bool>& vec)
 	{
 		lua_createtable(state, vec.size(), 0);
 		
@@ -65,7 +65,7 @@ namespace lpp
 	}
 	
 	template<>
-	void Selection::operator=(const std::vector<int>& vec)
+	void Selection::operator =(const std::vector<int>& vec)
 	{
 		lua_createtable(state, vec.size(), 0);
 		
@@ -79,7 +79,7 @@ namespace lpp
 	}
 	
 	template<>
-	void Selection::operator=(const std::vector<unsigned>& vec)
+	void Selection::operator =(const std::vector<unsigned>& vec)
 	{
 		lua_createtable(state, vec.size(), 0);
 		
@@ -93,7 +93,7 @@ namespace lpp
 	}
 	
 	template<>
-	void Selection::operator=(const std::vector<lua_Number>& vec)
+	void Selection::operator =(const std::vector<lua_Number>& vec)
 	{
 		lua_createtable(state, vec.size(), 0);
 		
@@ -107,7 +107,7 @@ namespace lpp
 	}
 	
 	template<>
-	void Selection::operator=(const std::vector<std::string>& vec)
+	void Selection::operator =(const std::vector<std::string>& vec)
 	{
 		lua_createtable(state, vec.size(), 0);
 		
@@ -123,7 +123,7 @@ namespace lpp
 	// vector to map assignment
 	// guessing " * 2" because a map has twice as many elements as a vector
 	template<>
-	void Selection::operator=(const std::map<std::string, bool>& map)
+	void Selection::operator =(const std::map<std::string, bool>& map)
 	{
 		lua_createtable(state, map.size() * 2, 0);
 		
@@ -138,7 +138,7 @@ namespace lpp
 	}
 	
 	template<>
-	void Selection::operator=(const std::map<std::string, int>& map)
+	void Selection::operator =(const std::map<std::string, int>& map)
 	{
 		lua_createtable(state, map.size() * 2, 0);
 		
@@ -153,7 +153,7 @@ namespace lpp
 	}
 	
 	template<>
-	void Selection::operator=(const std::map<std::string, unsigned int>& map)
+	void Selection::operator =(const std::map<std::string, unsigned int>& map)
 	{
 		lua_createtable(state, map.size() * 2, 0);
 		
@@ -168,7 +168,7 @@ namespace lpp
 	}
 	
 	template<>
-	void Selection::operator=(const std::map<std::string, lua_Number>& map)
+	void Selection::operator =(const std::map<std::string, lua_Number>& map)
 	{
 		lua_createtable(state, map.size() * 2, 0);
 		
@@ -183,7 +183,7 @@ namespace lpp
 	}
 	
 	template<>
-	void Selection::operator=(const std::map<std::string, std::string>& map)
+	void Selection::operator =(const std::map<std::string, std::string>& map)
 	{
 		lua_createtable(state, map.size() * 2, 0);
 		
@@ -198,7 +198,6 @@ namespace lpp
 	}
 	
 	// casting
-	template<>
 	Selection::operator bool() const
 	{
 		if(index == 0)
@@ -210,7 +209,6 @@ namespace lpp
 		return ret;
 	}
 	
-	template<>
 	Selection::operator int() const
 	{
 		if(index == 0)
@@ -222,7 +220,6 @@ namespace lpp
 		return ret;
 	}
 	
-	template<>
 	Selection::operator unsigned int() const
 	{
 		if(index == 0)
@@ -234,7 +231,6 @@ namespace lpp
 		return ret;
 	}
 	
-	template<>
 	Selection::operator lua_Number() const
 	{
 		if(index == 0)
@@ -246,7 +242,6 @@ namespace lpp
 		return ret;
 	}
 	
-	template<>
 	Selection::operator std::string() const
 	{
 		if(index == 0)
@@ -259,13 +254,13 @@ namespace lpp
 		return std::string{ret, size};
 	}
 	
-	Selection Selection::operator[](const std::string& n) const
+	Selection Selection::operator [](const std::string& n) const
 	{
 		lua_getglobal(state, name.c_str());
 		std::string newName = name + '.' + n;
 		
 		if(!lua_istable(state, -1))
-			newName = name;
+			newName = "";
 		
 		lua_pushlstring(state, n.c_str(), n.size());
 		lua_rawget(state, -2);
@@ -273,7 +268,7 @@ namespace lpp
 		return Selection(state, newName);
 	}
 	
-	Selection Selection::operator[](const int i) const
+	Selection Selection::operator [](const int i) const
 	{
 		lua_getglobal(state, name.c_str());
 		std::string newName = name + '.' + std::to_string(i);

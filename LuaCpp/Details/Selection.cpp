@@ -17,6 +17,7 @@ namespace lpp
 	Selection::~Selection()
 	{}
 	
+	/* assignment functions */
 	// primitive assignment
 	void Selection::operator =(bool b)
 	{
@@ -120,8 +121,8 @@ namespace lpp
 		lua_setglobal(state, name.c_str());		
 	}
 	
-	// vector to map assignment
-	// guessing " * 2" because a map has twice as many elements as a vector
+	// map to table assignment
+	// guessing " * 2" because a map has twice as many elements as a vector (key, value)
 	template<>
 	void Selection::operator =(const std::map<std::string, bool>& map)
 	{
@@ -197,7 +198,8 @@ namespace lpp
 		lua_setglobal(state, name.c_str());		
 	}
 	
-	// casting
+	/* casting functions */
+	// casting primitives
 	Selection::operator bool() const
 	{
 		if(index == 0)
@@ -254,6 +256,264 @@ namespace lpp
 		return std::string{ret, size};
 	}
 	
+	// casting vectors
+	template<>
+	Selection::operator std::vector<bool>() const
+	{
+		if(index == 0)
+			lua_getglobal(state, name.c_str());
+			
+		if(!lua_istable(state, -1))
+			throw 0;
+		
+		std::vector<bool> newVec;
+		
+		std::size_t tableLength = lua_rawlen(state, -1);
+		
+		for(unsigned int i = 1; i <= tableLength; i++)
+		{
+			lua_rawgeti(state, -1, i);
+			newVec.push_back(lua_toboolean(state, -1));
+			lua_pop(state, 1);
+		}
+		
+		lua_settop(state, 0);
+		return newVec;
+	}
+	
+	template<>
+	Selection::operator std::vector<int>() const
+	{
+		if(index == 0)
+			lua_getglobal(state, name.c_str());
+			
+		if(!lua_istable(state, -1))
+			throw 0;
+		
+		std::vector<int> newVec;
+		
+		std::size_t tableLength = lua_rawlen(state, -1);
+		
+		for(unsigned int i = 1; i <= tableLength; i++)
+		{
+			lua_rawgeti(state, -1, i);
+			newVec.push_back(lua_tointeger(state, -1));
+			lua_pop(state, 1);
+		}
+		
+		lua_settop(state, 0);
+		return newVec;
+	}
+	
+	template<>
+	Selection::operator std::vector<unsigned int>() const
+	{
+		if(index == 0)
+			lua_getglobal(state, name.c_str());
+			
+		if(!lua_istable(state, -1))
+			throw 0;
+		
+		std::vector<unsigned int> newVec;
+		
+		std::size_t tableLength = lua_rawlen(state, -1);
+		
+		for(unsigned int i = 1; i <= tableLength; i++)
+		{
+			lua_rawgeti(state, -1, i);
+			newVec.push_back(lua_tounsigned(state, -1));
+			lua_pop(state, 1);
+		}
+		
+		lua_settop(state, 0);
+		return newVec;
+	}
+	
+	template<>
+	Selection::operator std::vector<lua_Number>() const
+	{
+		if(index == 0)
+			lua_getglobal(state, name.c_str());
+			
+		if(!lua_istable(state, -1))
+			throw 0;
+		
+		std::vector<lua_Number> newVec;
+		
+		std::size_t tableLength = lua_rawlen(state, -1);
+		
+		for(unsigned int i = 1; i <= tableLength; i++)
+		{
+			lua_rawgeti(state, -1, i);
+			newVec.push_back(lua_tonumber(state, -1));
+			lua_pop(state, 1);
+		}
+		
+		lua_settop(state, 0);
+		return newVec;
+	}
+	
+	template<>
+	Selection::operator std::vector<std::string>() const
+	{
+		if(index == 0)
+			lua_getglobal(state, name.c_str());
+			
+		if(!lua_istable(state, -1))
+			throw 0;
+		
+		std::vector<std::string> newVec;
+		
+		std::size_t tableLength = lua_rawlen(state, -1);
+		
+		for(unsigned int i = 1; i <= tableLength; i++)
+		{
+			lua_rawgeti(state, -1, i);
+			std::size_t strSize;
+			const char* str = lua_tolstring(state, -1, &strSize);
+			newVec.push_back({str, strSize});
+			lua_pop(state, 1);
+		}
+		
+		lua_settop(state, 0);
+		return newVec;
+	}
+	
+	// casting maps
+	template<>
+	Selection::operator std::map<std::string, bool>() const
+	{
+		if(index == 0)
+			lua_getglobal(state, name.c_str());
+		
+		if(!lua_istable(state, -1))
+			throw 0;
+		
+		std::map<std::string, bool> newMap;
+		
+		lua_pushnil(state);
+		while(lua_next(state, -2))
+		{
+			std::size_t strSize;
+			const char* str = lua_tolstring(state, -2, &strSize);
+			bool val = lua_toboolean(state, -1);
+			
+			newMap.emplace(std::string{str, strSize}, val);
+			lua_pop(state, 1);
+		}
+		
+		lua_settop(state, 0);
+		return newMap;
+	}
+	
+	template<>
+	Selection::operator std::map<std::string, int>() const
+	{
+		if(index == 0)
+			lua_getglobal(state, name.c_str());
+		
+		if(!lua_istable(state, -1))
+			throw 0;
+		
+		std::map<std::string, int> newMap;
+		
+		lua_pushnil(state);
+		while(lua_next(state, -2))
+		{
+			std::size_t strSize;
+			const char* str = lua_tolstring(state, -2, &strSize);
+			int val = lua_tointeger(state, -1);
+			
+			newMap.emplace(std::string{str, strSize}, val);
+			lua_pop(state, 1);
+		}
+		
+		lua_settop(state, 0);
+		return newMap;
+	}
+	
+	template<>
+	Selection::operator std::map<std::string, unsigned int>() const
+	{
+		if(index == 0)
+			lua_getglobal(state, name.c_str());
+		
+		if(!lua_istable(state, -1))
+			throw 0;
+		
+		std::map<std::string, unsigned int> newMap;
+		
+		lua_pushnil(state);
+		while(lua_next(state, -2))
+		{
+			std::size_t strSize;
+			const char* str = lua_tolstring(state, -2, &strSize);
+			unsigned int val = lua_tounsigned(state, -1);
+			
+			newMap.emplace(std::string{str, strSize}, val);
+			lua_pop(state, 1);
+		}
+		
+		lua_settop(state, 0);
+		return newMap;
+	}
+	
+	template<>
+	Selection::operator std::map<std::string, lua_Number>() const
+	{
+		if(index == 0)
+			lua_getglobal(state, name.c_str());
+		
+		if(!lua_istable(state, -1))
+			throw 0;
+		
+		std::map<std::string, lua_Number> newMap;
+		
+		lua_pushnil(state);
+		while(lua_next(state, -2))
+		{
+			std::size_t strSize;
+			const char* str = lua_tolstring(state, -2, &strSize);
+			lua_Number val = lua_tonumber(state, -1);
+			
+			newMap.emplace(std::string{str, strSize}, val);
+			lua_pop(state, 1);
+		}
+		
+		lua_settop(state, 0);
+		return newMap;
+	}
+	
+	template<>
+	Selection::operator std::map<std::string, std::string>() const
+	{
+		if(index == 0)
+			lua_getglobal(state, name.c_str());
+		
+		if(!lua_istable(state, -1))
+			throw 0;
+		
+		std::map<std::string, std::string> newMap;
+		
+		lua_pushnil(state);
+		while(lua_next(state, -2))
+		{
+			std::size_t strSize;
+			const char* str = lua_tolstring(state, -2, &strSize);
+			std::string key = {str, strSize};
+			
+			str = lua_tolstring(state, -1, &strSize);
+			std::string val = {str, strSize};
+			
+			newMap.emplace(key, val);
+			lua_pop(state, 1);
+		}
+		
+		lua_settop(state, 0);
+		return newMap;
+	}
+	
+	/* Selection operators */
 	Selection Selection::operator [](const std::string& n) const
 	{
 		lua_getglobal(state, name.c_str());
@@ -281,6 +541,7 @@ namespace lpp
 		return Selection(state, newName, -1);
 	}
 	
+	/* pushing primitives */
 	void Selection::pushValue(lua_State* state, bool b)
 	{
 		lua_pushboolean(state, b);

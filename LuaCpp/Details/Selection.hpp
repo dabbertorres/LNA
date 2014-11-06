@@ -49,6 +49,12 @@ namespace lpp
 			operator std::string() const;
 			
 			template<typename Type>
+			operator std::vector<Type>() const;
+			
+			template<typename Key, typename Value>
+			operator std::map<Key, Value>() const;
+			
+			template<typename Type>
 			operator Type() const;
 			
 			template<typename Type>
@@ -59,7 +65,7 @@ namespace lpp
 			Selection operator [](const int i) const;
 
 		private:
-			// "generic" value pushing
+			// "generic" value pushing (all primitives)
 			void pushValue(lua_State* state, bool b);
 			void pushValue(lua_State* state, int i);
 			void pushValue(lua_State* state, unsigned int ui);

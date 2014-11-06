@@ -201,46 +201,61 @@ namespace lpp
 	template<>
 	Selection::operator bool() const
 	{
-		lua_getglobal(state, name.c_str());
+		if(index == 0)
+			lua_getglobal(state, name.c_str());
+			
 		bool ret = lua_toboolean(state, -1);
-		lua_pop(state, 1);
+		
+		lua_settop(state, 0);
 		return ret;
 	}
 	
 	template<>
 	Selection::operator int() const
 	{
-		lua_getglobal(state, name.c_str());
+		if(index == 0)
+			lua_getglobal(state, name.c_str());
+			
 		int ret = lua_tointeger(state, -1);
-		lua_pop(state, 1);
+		
+		lua_settop(state, 0);
 		return ret;
 	}
 	
 	template<>
 	Selection::operator unsigned int() const
 	{
-		lua_getglobal(state, name.c_str());
+		if(index == 0)
+			lua_getglobal(state, name.c_str());
+			
 		unsigned int ret = lua_tounsigned(state, -1);
-		lua_pop(state, 1);
+		
+		lua_settop(state, 0);
 		return ret;
 	}
 	
 	template<>
 	Selection::operator lua_Number() const
 	{
-		lua_getglobal(state, name.c_str());
+		if(index == 0)
+			lua_getglobal(state, name.c_str());
+			
 		lua_Number ret = lua_tonumber(state, -1);
-		lua_pop(state, 1);
+		
+		lua_settop(state, 0);
 		return ret;
 	}
 	
 	template<>
 	Selection::operator std::string() const
 	{
-		lua_getglobal(state, name.c_str());
+		if(index == 0)
+			lua_getglobal(state, name.c_str());
+			
 		std::size_t size;
 		const char* ret = lua_tolstring(state, -1, &size);
-		lua_pop(state, 1);
+		
+		lua_settop(state, 0);
 		return std::string{ret, size};
 	}
 	
@@ -252,17 +267,22 @@ namespace lpp
 		if(!lua_istable(state, -1))
 			newName = name;
 		
+		lua_pushlstring(state, n.c_str(), n.size());
+		lua_rawget(state, -2);
+		
 		return Selection(state, newName);
 	}
 	
 	Selection Selection::operator[](const int i) const
 	{
 		lua_getglobal(state, name.c_str());
-		std::string newName = name + '[' + std::to_string(i) + ']';
+		std::string newName = name + '.' + std::to_string(i);
 		
 		if(!lua_istable(state, -1))
-			newName = name;
+			newName = "";
 		
-		return Selection(state, newName);
+		lua_rawgeti(state, -1, i);
+		
+		return Selection(state, newName, -1);
 	}
 }

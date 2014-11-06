@@ -8,3 +8,8 @@ end
 
 print(m.first)
 print(m.second)
+
+function printSomething(x, y)
+	print("x: "..x)
+	print("y: "..y)
+end

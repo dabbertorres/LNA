@@ -37,6 +37,8 @@ int main(int argc, char **argv)
 	std::string str2 = luaState["j"][2];
 	std::string str3 = luaState["j"][3];
 	
+	luaState["printSomething"](5, 3, 2);
+	
 	std::cout << str0 << '\n';
 	std::cout << str1 << '\n';
 	std::cout << str2 << '\n';

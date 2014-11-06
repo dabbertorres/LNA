@@ -16,3 +16,7 @@ Getting variables/values to/from Lua/C++
 Simple lightuserdata implementation
 
 Calling Lua functions
+
+Examples
+========
+See main.cpp and Debug/main.lua for examples.

@@ -8,7 +8,7 @@ end
 
 nums = {3, 2, 1}
 
-map = {"hi" = 5, "world" = 3}
+map = {hi = 5, world = 3}
 
 print(m.first)
 print(m.second)

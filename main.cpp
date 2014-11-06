@@ -22,7 +22,7 @@ int main(int argc, char **argv)
 	luaState["j"] = std::vector<int>{5, 3, 2};
 	luaState["m"] = std::map<std::string, std::string>{{"first", "hello"}, {"second", "world"}};
 	
-	Vector2D<int> vec2d{5, 3};
+	Vector2D<int> vec2d{10, 4};
 	luaState["vec2d"] = vec2d;
 	
 	luaState.run();
@@ -37,19 +37,22 @@ int main(int argc, char **argv)
 	std::string str2 = luaState["j"][2];
 	std::string str3 = luaState["j"][3];
 	
-	std::vector<int> nums = luaState["nums"];
-	
-	std::map<std::string, int> strNums = luaState["map"];
-	
-	luaState["printSomething"](5, 3, 2);
-	
 	std::cout << str0 << '\n';
 	std::cout << str1 << '\n';
 	std::cout << str2 << '\n';
 	std::cout << str3 << '\n';
 	
+	std::vector<int> nums = luaState["nums"];
+	
+	std::map<std::string, int> strNums = luaState["map"];
+	
+	luaState["printSomething"](1, 7, 2);
+	
 	for(auto& n : nums)
 		std::cout << "Num: " << n << '\n';
+		
+	for(auto& it : strNums)
+		std::cout << it.first << ": " << it.second << '\n';
 	
 	return 0;
 }

@@ -29,31 +29,35 @@ namespace lpp
 			void operator =(lua_Number n);
 			void operator =(const std::string& s);
 			
-			template<typename Type>
-			void operator =(Type* t);
-			
-			template<typename Type>
-			void operator =(Type& t);
-			
+			// assigning Lua table from C++ containers
 			template<typename Type>
 			void operator =(const std::vector<Type>& vec);
 
 			template<typename Key, typename Value>
 			void operator =(const std::map<Key, Value>& map);
 			
-			// casting selector to C++ types
+			// assigning Lua variable to C++ object
+			template<typename Type>
+			void operator =(Type* t);
+			
+			template<typename Type>
+			void operator =(Type& t);
+			
+			// casting to primitive types
 			operator bool() const;
 			operator int() const;
 			operator unsigned int() const;
 			operator lua_Number() const;
 			operator std::string() const;
 			
+			// casting Lua table to C++ containers
 			template<typename Type>
 			operator std::vector<Type>() const;
 			
 			template<typename Key, typename Value>
 			operator std::map<Key, Value>() const;
 			
+			// casting Lua type to C++ object
 			template<typename Type>
 			operator Type() const;
 			
@@ -66,14 +70,16 @@ namespace lpp
 
 		private:
 			// "generic" value pushing (all primitives)
-			void pushValue(lua_State* state, bool b);
-			void pushValue(lua_State* state, int i);
-			void pushValue(lua_State* state, unsigned int ui);
-			void pushValue(lua_State* state, lua_Number n);
-			void pushValue(lua_State* state, const std::string& s);
+			void pushValue(bool b);
+			void pushValue(int i);
+			void pushValue(unsigned int ui);
+			void pushValue(lua_Number n);
+			void pushValue(const std::string& s);
 			
+			// case where we've distributed and pushed all arguments
 			void distributeArgs() {};
 			
+			// distribute arguments to function call
 			template<typename First, typename... Args>
 			void distributeArgs(First first, Args... args);
 			
@@ -82,6 +88,7 @@ namespace lpp
 			int index;
 	};
 	
+	// calling Lua function
 	template<typename First, typename... Args>
 	Selection Selection::operator()(First first, Args... args)
 	{
@@ -96,6 +103,7 @@ namespace lpp
 		return Selection(state, name, -1);
 	}
 	
+	// assignment of C++ pointer object to Lua var
 	template<typename Type>
 	void Selection::operator =(Type* t)
 	{
@@ -110,6 +118,7 @@ namespace lpp
 		lua_setglobal(state, name.c_str());
 	}
 	
+	// casting to C++ object from Lua var
 	template<typename Type>
 	Selection::operator Type() const
 	{
@@ -134,10 +143,12 @@ namespace lpp
 		return ret;
 	}
 	
+	// distribute arguments to function call
+	// recursive, eventually calls pushValue for each type in ...args
 	template<typename First, typename... Args>
 	void Selection::distributeArgs(First first, Args... args)
 	{
-		pushValue(state, first);
+		pushValue(first);
 		distributeArgs(args...);
 	}
 }

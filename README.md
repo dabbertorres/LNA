@@ -10,13 +10,13 @@ std containers and Lua tables. We'll see how that goes.
 
 What's Working
 ==============
-Getting variables/values to/from Lua/C++
+-Getting variables/values to/from Lua/C++
 (including std::vector and std::map atm)
 
-Simple lightuserdata implementation
+-Simple lightuserdata implementation
 
-Calling Lua functions
+-Calling Lua functions
 
 Examples
 ========
-See main.cpp and Debug/main.lua for examples.
+See <a href="https://github.com/dabbertorres/luapp/blob/master/main.cpp">main.cpp</a> and <a href="https://github.com/dabbertorres/luapp/blob/master/Debug/main.lua">Debug/main.lua</a> for examples.

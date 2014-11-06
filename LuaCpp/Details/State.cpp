@@ -17,10 +17,7 @@ namespace lpp
 	bool State::loadFile(const std::string& f)
 	{
 		if(luaL_loadfile(state, f.c_str()))
-		{
-			stackDump();
 			return false;
-		}
 		else
 			return true;
 	}
@@ -28,10 +25,7 @@ namespace lpp
 	bool State::run()
 	{
 		if(lua_pcall(state, 0, 0, 0))
-		{
-			stackDump();
 			return false;
-		}
 		else
 			return true;
 	}
@@ -57,15 +51,29 @@ namespace lpp
 			
 			switch(type)
 			{
-				case LUA_TSTRING:
-					std::cout << i << ": " << lua_tostring(state, i) << '\n';
-					break;
-				case LUA_TBOOLEAN:
-					std::cout << i << ": " << (lua_toboolean(state, i) ? "true" : "false") << '\n';
+				case LUA_TNIL:
+					std::cout << i << ": nil\n";
 					break;
 				case LUA_TNUMBER:
-					std::cout << i << ": " << lua_tonumber(state, i) << '\n';
+					std::cout << i << ": number = " << lua_tonumber(state, i) << '\n';
 					break;
+				case LUA_TBOOLEAN:
+					std::cout << i << ": bool = " << (lua_toboolean(state, i) ? "true" : "false") << '\n';
+					break;
+				case LUA_TSTRING:
+					std::cout << i << ": string = " << lua_tostring(state, i) << '\n';
+					break;
+				case LUA_TTABLE:
+					std::cout << i << ": table = {";
+					
+					lua_pushnil(state);
+					while(lua_next(state, -2))
+					{
+						std::cout << lua_tostring(state, -2) << " = " << lua_tostring(state, -1) << ", ";
+						lua_pop(state, 1);
+					}
+					
+					std::cout << "}\n";
 				default:
 					std::cout << i << ": " << lua_typename(state, i) << '\n';
 					break;

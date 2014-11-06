@@ -280,4 +280,29 @@ namespace lpp
 		
 		return Selection(state, newName, -1);
 	}
+	
+	void Selection::pushValue(lua_State* state, bool b)
+	{
+		lua_pushboolean(state, b);
+	}
+	
+	void Selection::pushValue(lua_State* state, int i)
+	{
+		lua_pushinteger(state, i);
+	}
+	
+	void Selection::pushValue(lua_State* state, unsigned int ui)
+	{
+		lua_pushunsigned(state, ui);
+	}
+	
+	void Selection::pushValue(lua_State* state, lua_Number n)
+	{
+		lua_pushnumber(state, n);
+	}
+	
+	void Selection::pushValue(lua_State* state, const std::string& s)
+	{
+		lua_pushlstring(state, s.c_str(), s.size());
+	}
 }

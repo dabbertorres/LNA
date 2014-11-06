@@ -19,8 +19,8 @@ namespace lpp
 			~Selection();
 			
 			// lua function call
-			template<typename Ret, typename... Args>
-			Ret operator()(Args... args);
+			template<typename First, typename... Args>
+			Selection operator()(First first, Args... args);
 			
 			// assignment operators
 			void operator =(bool b);
@@ -59,17 +59,35 @@ namespace lpp
 			Selection operator [](const int i) const;
 
 		private:
+			// "generic" value pushing
+			void pushValue(lua_State* state, bool b);
+			void pushValue(lua_State* state, int i);
+			void pushValue(lua_State* state, unsigned int ui);
+			void pushValue(lua_State* state, lua_Number n);
+			void pushValue(lua_State* state, const std::string& s);
+			
+			void distributeArgs() {};
+			
+			template<typename First, typename... Args>
+			void distributeArgs(First first, Args... args);
+			
 			lua_State* state;
 			std::string name;
 			int index;
 	};
 	
-	template<typename Ret, typename... Args>
-	Ret Selection::operator()(Args... args)
+	template<typename First, typename... Args>
+	Selection Selection::operator()(First first, Args... args)
 	{
 		lua_getglobal(state, name.c_str());
 		
-		//lua_pushvalue(state, )
+		distributeArgs(first, args...);
+		
+		constexpr int nargs = sizeof...(Args) + 1;
+		
+		lua_pcall(state, nargs, 1, 0);
+		
+		return Selection(state, name, -1);
 	}
 	
 	template<typename Type>
@@ -108,6 +126,13 @@ namespace lpp
 		
 		lua_settop(state, 0);
 		return ret;
+	}
+	
+	template<typename First, typename... Args>
+	void Selection::distributeArgs(First first, Args... args)
+	{
+		pushValue(state, first);
+		distributeArgs(args...);
 	}
 }
 

@@ -2,18 +2,16 @@
 
 namespace lpp
 {
-	Selection::Selection(lua_State* s, const std::string& n, const std::string& modName)
+	Selection::Selection(lua_State* s, const std::string& n)
 	:	state(s),
 		name(n),
-		moduleName(modName),
 		index(0)
 		
 	{}
 	
-	Selection::Selection(lua_State* s, const std::string& n, const std::string& modName, int idx)
+	Selection::Selection(lua_State* s, const std::string& n, int idx)
 	:	state(s),
 		name(n),
-		moduleName(modName),
 		index(idx)
 	{}
 
@@ -32,7 +30,7 @@ namespace lpp
 		lua_pushlstring(state, n.c_str(), n.size());
 		lua_rawget(state, -2);
 		
-		return Selection(state, newName, moduleName);
+		return Selection(state, newName);
 	}
 	
 	Selection Selection::operator [](const int i) const
@@ -45,6 +43,6 @@ namespace lpp
 		
 		lua_rawgeti(state, -1, i);
 		
-		return Selection(state, newName, moduleName, -1);
+		return Selection(state, newName, -1);
 	}
 }

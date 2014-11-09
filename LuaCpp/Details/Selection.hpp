@@ -10,16 +10,17 @@
 #include <memory>
 
 #include "Details.hpp"
-#include "Function.hpp"
+#include "CppFunction.hpp"
+#include "LuaFunction.hpp"
 
 namespace lpp
 {
 	class Selection
 	{
 		public:
-			Selection(lua_State* s, const std::string& n, const std::string& modName);
+			Selection(lua_State* s, const std::string& n);
 			// if this Selection is part of a table, idx will not be 0, and will be the index in the stack of the table this Selection is part of
-			Selection(lua_State* s, const std::string& n, const std::string& modName, int idx);
+			Selection(lua_State* s, const std::string& n, int idx);
 			~Selection();
 			
 			// lua function call
@@ -61,7 +62,6 @@ namespace lpp
 		private:
 			lua_State* state;
 			std::string name;
-			std::string moduleName;
 			int index;
 	};
 	
@@ -134,7 +134,7 @@ namespace lpp
 	template<typename Ret, typename... Args>
 	void Selection::operator =(const std::function<Ret(Args...)>& f)
 	{
-		BaseFunction::functions.emplace(name, std::unique_ptr<BaseFunction>(new Function<Ret, Args...>(state, name, f)));
+		BaseCppFunction::functions.emplace(name, std::unique_ptr<BaseCppFunction>(new CppFunction<Ret, Args...>(state, name, f)));
 	}
 	
 	template<typename T>

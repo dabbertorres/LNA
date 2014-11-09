@@ -4,8 +4,7 @@
 
 namespace lpp
 {
-	State::State(const std::string& modName)
-	:	moduleName(modName)
+	State::State()
 	{
 		state = luaL_newstate();
 	}
@@ -39,7 +38,7 @@ namespace lpp
 	
 	Selection State::operator[](const std::string& name)
 	{
-		return Selection(state, name, moduleName);
+		return Selection(state, name);
 	}
 	
 	std::string State::getErrors() const

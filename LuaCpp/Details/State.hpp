@@ -12,7 +12,7 @@ namespace lpp
 	class State
 	{
 		public:
-			State(const std::string& modName);
+			State();
 			~State();
 			
 			bool loadFile(const std::string& f);
@@ -33,8 +33,6 @@ namespace lpp
 			void clean();
 
 			lua_State* state;
-			
-			std::string moduleName;
 	};
 }
 

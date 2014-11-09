@@ -15,7 +15,7 @@ int add(int x, int y)
 
 int main(int argc, char **argv)
 {
-	lpp::State luaState("test");
+	lpp::State luaState;
 	luaState.openLib("base", luaopen_base);
 	luaState.openLib("math", luaopen_math);
 	luaState.openLib("string", luaopen_string);

@@ -1,5 +1,5 @@
-#ifndef FUNCTION_HPP
-#define FUNCTION_HPP
+#ifndef CPP_FUNCTION_HPP
+#define CPP_FUNCTION_HPP
 
 #include <lua.hpp>
 
@@ -13,37 +13,37 @@
 
 namespace lpp
 {
-	class BaseFunction
+	class BaseCppFunction
 	{
 		public:
 			virtual int run(lua_State* state) = 0;
 			
 			static int luaDispatcher(lua_State* state)
 			{
-				BaseFunction* func = static_cast<BaseFunction*>(lua_touserdata(state, lua_upvalueindex(1)));
+				BaseCppFunction* func = static_cast<BaseCppFunction*>(lua_touserdata(state, lua_upvalueindex(1)));
 				return func->run(state);
 			}
 			
-			static std::unordered_map<std::string, std::unique_ptr<BaseFunction>> functions;
+			static std::unordered_map<std::string, std::unique_ptr<BaseCppFunction>> functions;
 	};
 	
 	template<typename Ret, typename... Args>
-	class Function : public BaseFunction
+	class CppFunction : public BaseCppFunction
 	{
 		public:
-			Function(lua_State* s, const std::string& n, const std::function<Ret(Args...)>& f)
+			CppFunction(lua_State* s, const std::string& n, const std::function<Ret(Args...)>& f)
 			:	state(s),
 				name(n),
 				function(f)
 			{
-				lua_pushlightuserdata(state, static_cast<BaseFunction*>(this));
+				lua_pushlightuserdata(state, static_cast<BaseCppFunction*>(this));
 				
 				lua_pushcclosure(state, luaDispatcher, 1);
 				
 				lua_setglobal(state, name.c_str());
 			}
 			
-			~Function() {}
+			~CppFunction() {}
 			
 			virtual int run(lua_State* state)
 			{
@@ -60,22 +60,22 @@ namespace lpp
 	};
 	
 	template<typename... Args>
-	class Function<void, Args...> : public BaseFunction
+	class CppFunction<void, Args...> : public BaseCppFunction
 	{
 		public:
-			Function(lua_State* s, const std::string& n, const std::function<void(Args...)>& f)
+			CppFunction(lua_State* s, const std::string& n, const std::function<void(Args...)>& f)
 			:	state(s),
 				name(n),
 				function(f)
 			{
-				lua_pushlightuserdata(state, static_cast<BaseFunction*>(this));
+				lua_pushlightuserdata(state, static_cast<BaseCppFunction*>(this));
 				
 				lua_pushcclosure(state, luaDispatcher, 1);
 				
 				lua_setglobal(state, name.c_str());
 			}
 			
-			~Function() {}
+			~CppFunction() {}
 			
 			virtual int run(lua_State* state)
 			{
@@ -90,4 +90,4 @@ namespace lpp
 	};
 }
 
-#endif // FUNCTION_HPP
+#endif // CPP_FUNCTION_HPP

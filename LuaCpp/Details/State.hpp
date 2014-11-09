@@ -1,7 +1,7 @@
 #ifndef STATE_HPP
 #define STATE_HPP
 
-#include "lua.hpp"
+#include <lua.hpp>
 
 #include <string>
 
@@ -12,7 +12,7 @@ namespace lpp
 	class State
 	{
 		public:
-			State();
+			State(const std::string& modName);
 			~State();
 			
 			bool loadFile(const std::string& f);
@@ -21,14 +21,20 @@ namespace lpp
 
 			void openLib(const std::string& name, lua_CFunction open);
 
-			Selection operator[](const std::string& name) const;
+			Selection operator[](const std::string& name);
 			
-			void stackDump();
+			std::string getErrors() const;
+			void stackDump() const;
+			
+			// act as a lua_State
+			operator lua_State*() const;
 
 		private:
 			void clean();
 
 			lua_State* state;
+			
+			std::string moduleName;
 	};
 }
 

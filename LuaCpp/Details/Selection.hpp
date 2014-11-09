@@ -1,155 +1,206 @@
 #ifndef SELECTION_HPP
 #define SELECTION_HPP
 
-#include "lua.hpp"
+#include <lua.hpp>
 
 #include <string>
 #include <functional>
 #include <vector>
 #include <map>
+#include <memory>
+
+#include "Details.hpp"
+#include "Function.hpp"
 
 namespace lpp
 {
 	class Selection
 	{
 		public:
-			Selection(lua_State* s, const std::string& n);
+			Selection(lua_State* s, const std::string& n, const std::string& modName);
 			// if this Selection is part of a table, idx will not be 0, and will be the index in the stack of the table this Selection is part of
-			Selection(lua_State* s, const std::string& n, int idx);
+			Selection(lua_State* s, const std::string& n, const std::string& modName, int idx);
 			~Selection();
 			
 			// lua function call
-			template<typename First, typename... Args>
-			Selection operator()(First first, Args... args);
+			template<typename... Ret, typename... Args>
+			std::tuple<Ret...> operator()(Args... args);
 			
 			// assignment operators
-			void operator =(bool b);
-			void operator =(int i);
-			void operator =(unsigned int ui);
-			void operator =(lua_Number n);
-			void operator =(const std::string& s);
+			template<typename T>
+			void operator =(T& t);
+			
+			template<typename T>
+			void operator =(const T& t);
 			
 			// assigning Lua table from C++ containers
-			template<typename Type>
-			void operator =(const std::vector<Type>& vec);
+			template<typename T>
+			void operator =(const std::vector<T>& vec);
 
-			template<typename Key, typename Value>
-			void operator =(const std::map<Key, Value>& map);
+			template<typename K, typename V>
+			void operator =(const std::map<K, V>& map);
 			
-			// assigning Lua variable to C++ object
-			template<typename Type>
-			void operator =(Type* t);
+			// assigning Lua variable to C++ function
+			template<typename Ret, typename... Args>
+			void operator =(const std::function<Ret(Args...)>& f);
 			
-			template<typename Type>
-			void operator =(Type& t);
+			// casting to types
+			template<typename T>
+			operator T() const;
 			
-			// casting to primitive types
-			operator bool() const;
-			operator int() const;
-			operator unsigned int() const;
-			operator lua_Number() const;
-			operator std::string() const;
+			template<typename T>
+			operator std::vector<T>() const;
 			
-			// casting Lua table to C++ containers
-			template<typename Type>
-			operator std::vector<Type>() const;
-			
-			template<typename Key, typename Value>
-			operator std::map<Key, Value>() const;
-			
-			// casting Lua type to C++ object
-			template<typename Type>
-			operator Type() const;
-			
-			template<typename Type>
-			operator Type*() const;
+			template<typename K, typename V>
+			operator std::map<K, V>() const;
 			
 			// operator chaining
 			Selection operator [](const std::string& n) const;
 			Selection operator [](const int i) const;
 
 		private:
-			// "generic" value pushing (all primitives)
-			void pushValue(bool b);
-			void pushValue(int i);
-			void pushValue(unsigned int ui);
-			void pushValue(lua_Number n);
-			void pushValue(const std::string& s);
-			
-			// case where we've distributed and pushed all arguments
-			void distributeArgs() {};
-			
-			// distribute arguments to function call
-			template<typename First, typename... Args>
-			void distributeArgs(First first, Args... args);
-			
 			lua_State* state;
 			std::string name;
+			std::string moduleName;
 			int index;
 	};
 	
 	// calling Lua function
-	template<typename First, typename... Args>
-	Selection Selection::operator()(First first, Args... args)
+	template<typename... Ret, typename... Args>
+	std::tuple<Ret...> Selection::operator()(Args... args)
 	{
 		lua_getglobal(state, name.c_str());
 		
-		distributeArgs(first, args...);
+		detail::distributeArgs(state, args...);
 		
-		constexpr int nargs = sizeof...(Args) + 1;
+		constexpr int nargs = sizeof...(Args);
+		constexpr int nret = sizeof...(Ret);
 		
-		lua_pcall(state, nargs, 1, 0);
+		lua_pcall(state, nargs, nret, 0);
 		
-		return Selection(state, name, -1);
+		std::tuple<Ret...> final;
+		
+		return final;
 	}
 	
-	// assignment of C++ pointer object to Lua var
-	template<typename Type>
-	void Selection::operator =(Type* t)
+	// pushing primitives
+	template<typename T>
+	void Selection::operator =(T& t)
 	{
-		lua_pushlightuserdata(state, t);
+		detail::pushValue(state, t);
 		lua_setglobal(state, name.c_str());
 	}
 	
-	template<typename Type>
-	void Selection::operator =(Type& t)
+	template<typename T>
+	void Selection::operator =(const T& t)
 	{
-		lua_pushlightuserdata(state, &t);
+		detail::pushValue(state, t);
 		lua_setglobal(state, name.c_str());
 	}
 	
-	// casting to C++ object from Lua var
-	template<typename Type>
-	Selection::operator Type() const
+	// vector to table assignment
+	// "i + 1" here is to convert to Lua's tables starting at 1, not 0
+	template<typename T>
+	void Selection::operator =(const std::vector<T>& vec)
+	{
+		lua_createtable(state, vec.size(), 0);
+		
+		for(unsigned int i = 0; i < vec.size(); i++)
+		{
+			detail::pushValue(state, vec[i]);
+			lua_rawseti(state, -2, i + 1);
+		}
+		
+		lua_setglobal(state, name.c_str());		
+	}
+	
+	// map to table assignment
+	template<typename K, typename V>
+	void Selection::operator =(const std::map<K, V>& map)
+	{
+		lua_createtable(state, map.size(), 0);
+		
+		for(auto& v : map)
+		{
+			detail::pushValue(state, v.first);
+			detail::pushValue(state, v.second);
+			lua_rawset(state, -3);
+		}
+		
+		lua_setglobal(state, name.c_str());		
+	}
+	
+	// assignment of Lua variable to C++ function
+	template<typename Ret, typename... Args>
+	void Selection::operator =(const std::function<Ret(Args...)>& f)
+	{
+		BaseFunction::functions.emplace(name, std::unique_ptr<BaseFunction>(new Function<Ret, Args...>(state, name, f)));
+	}
+	
+	template<typename T>
+	Selection::operator T() const
 	{
 		if(index == 0)
 			lua_getglobal(state, name.c_str());
 		
-		Type* ret = static_cast<Type*>(lua_touserdata(state, -1));
+		T ret = detail::checkGet(detail::id<T>{}, state);
 		
-		lua_settop(state, 0);
-		return *ret;
-	}
-	
-	template<typename Type>
-	Selection::operator Type*() const
-	{
-		if(index == 0)
-			lua_getglobal(state, name.c_str());
-		
-		Type* ret = static_cast<Type*>(lua_touserdata(state, -1));
-		
-		lua_settop(state, 0);
+		lua_pop(state, 1);
 		return ret;
 	}
 	
-	// distribute arguments to function call
-	// recursive, eventually calls pushValue for each type in ...args
-	template<typename First, typename... Args>
-	void Selection::distributeArgs(First first, Args... args)
+	template<typename T>
+	Selection::operator std::vector<T>() const
 	{
-		pushValue(first);
-		distributeArgs(args...);
+		if(index == 0)
+			lua_getglobal(state, name.c_str());
+			
+		if(!lua_istable(state, -1))
+			luaL_error(state, "Value on top of stack is not a table");
+		
+		std::vector<T> newVec;
+		
+		std::size_t tableLength = lua_rawlen(state, -1);
+		
+		for(unsigned int i = 1; i <= tableLength; i++)
+		{
+			lua_rawgeti(state, -1, i);
+			
+			T t = detail::checkGet(detail::id<T>{}, state);
+			
+			newVec.push_back(t);
+			
+			lua_pop(state, 1);
+		}
+		
+		lua_settop(state, 0);
+		return newVec;
+	}
+			
+	template<typename K, typename V>
+	Selection::operator std::map<K, V>() const
+	{
+		if(index == 0)
+			lua_getglobal(state, name.c_str());
+		
+		if(!lua_istable(state, -1))
+			luaL_error(state, "Value on top of stack is not a table");
+		
+		std::map<K, V> newMap;
+		
+		lua_pushnil(state);
+		while(lua_next(state, -2))
+		{
+			K key = detail::checkGet(detail::id<K>{}, state, -2);
+			
+			V val = detail::checkGet(detail::id<V>{}, state);
+			
+			newMap.emplace(key, val);
+			lua_pop(state, 1);
+		}
+		
+		lua_settop(state, 0);
+		return newMap;
 	}
 }
 

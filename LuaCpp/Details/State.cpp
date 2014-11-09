@@ -4,7 +4,8 @@
 
 namespace lpp
 {
-	State::State()
+	State::State(const std::string& modName)
+	:	moduleName(modName)
 	{
 		state = luaL_newstate();
 	}
@@ -36,12 +37,25 @@ namespace lpp
 		clean();
 	}
 	
-	Selection State::operator[](const std::string& name) const
+	Selection State::operator[](const std::string& name)
 	{
-		return Selection(state, name);
+		return Selection(state, name, moduleName);
 	}
 	
-	void State::stackDump()
+	std::string State::getErrors() const
+	{
+		if(!lua_isnone(state, -1))
+		{
+			std::size_t size;
+			const char* buff = lua_tolstring(state, -1, &size);
+			lua_pop(state, 1);
+			return {buff, size};
+		}
+		else
+			return "";
+	}
+	
+	void State::stackDump() const
 	{
 		int top = lua_gettop(state);
 		
@@ -79,6 +93,11 @@ namespace lpp
 					break;
 			}
 		}
+	}
+	
+	State::operator lua_State*() const
+	{
+		return state;
 	}
 	
 	void State::clean()

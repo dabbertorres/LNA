@@ -20,6 +20,8 @@ j[2] = {2, 3}
 
 say("hello from Lua!")
 
+print("dotVec: "..dotVec(vec1, vec2))
+
 function printSomething(x, y)
 	print("x: "..x)
 	print("y: "..y)

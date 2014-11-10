@@ -15,6 +15,11 @@ float dot(float oneX, float oneY, float twoX, float twoY)
 	return oneX * twoX + oneY * twoY;
 }
 
+float dotVec(const Vector2i* one, const Vector2i* two)
+{
+	return one->x * two->x + one->y * two->y;
+}
+
 void say(std::string msg)
 {
 	std::cout << msg << '\n';
@@ -34,6 +39,7 @@ int main(int argc, char **argv)
 																	return x + y;
 																});
 	luaState["dot"] = &dot;
+	luaState["dotVec"] = &dotVec;
 	luaState["say"] = &say;
 	
 	// assign values to Lua variables
@@ -46,6 +52,9 @@ int main(int argc, char **argv)
 		std::cout << luaState.getErrors() << '\n';
 		return 1;
 	}
+	
+	luaState["vec1"] = Vector2i{14, 19};
+	luaState["vec2"] = Vector2i{12, 13};
 	
 	// load a file and catch syntax errors
 	if(luaState.loadFile("main.lua") != LUA_OK)

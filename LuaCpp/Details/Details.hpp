@@ -74,6 +74,12 @@ namespace detail
 		lua_pushlightuserdata(state, &t);
 	}
 	
+	template<typename T>
+	inline void pushValue(lua_State* state, const T& t)
+	{
+		lua_pushlightuserdata(state, &const_cast<T&>(t));
+	}
+	
 	// recursive argument distribution
 	inline void distributeArgs(lua_State* state) {};
 			

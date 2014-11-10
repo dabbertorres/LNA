@@ -6,7 +6,6 @@ namespace lpp
 	:	state(s),
 		name(n),
 		index(0)
-		
 	{}
 	
 	Selection::Selection(lua_State* s, const std::string& n, int idx)
@@ -16,12 +15,16 @@ namespace lpp
 	{}
 
 	Selection::~Selection()
-	{}
+	{
+		lua_settop(state, 0);
+	}
 	
 	/* Selection operators */
 	Selection Selection::operator [](const std::string& n) const
 	{
-		lua_getglobal(state, name.c_str());
+		if(index == 0)
+			lua_getglobal(state, name.c_str());
+		
 		std::string newName = name + '.' + n;
 		
 		if(!lua_istable(state, -1))
@@ -35,7 +38,9 @@ namespace lpp
 	
 	Selection Selection::operator [](const int i) const
 	{
-		lua_getglobal(state, name.c_str());
+		if(index == 0)
+			lua_getglobal(state, name.c_str());
+			
 		std::string newName = name + '[' + std::to_string(i) + ']';
 		
 		if(!lua_istable(state, -1))

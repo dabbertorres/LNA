@@ -14,8 +14,11 @@ What's Working
 (including std::vector and std::map atm)
 
 -Simple lightuserdata implementation
-
+    Passing objects around works. One condition: C++ functions that work on said objects, cannot accept references.
+      Only pass by value or pointer.
 -Calling Lua functions
+
+-Calling C++ functions
 
 Examples
 ========

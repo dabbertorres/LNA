@@ -70,6 +70,7 @@ int main(int argc, char **argv)
 	
 	// call lua function
 	luaState["printSomething"](1, 7);
+	
 	std::string hello = luaState["sayHello"]();
 	std::cout << hello << '\n';
 	

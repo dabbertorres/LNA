@@ -22,7 +22,7 @@ function printSomething(x, y)
 end
 
 function sayHello()
-	return ("hello!")
+	return "hello!"
 end
 
 function return2Nums()

@@ -10,17 +10,16 @@ std containers and Lua tables. We'll see how that goes.
 
 What's Working
 ==============
--Getting variables/values to/from Lua/C++
+- Getting variables/values to/from Lua/C++
 (including std::vector and std::map atm)
 
--Simple lightuserdata implementation
+- Simple lightuserdata implementation
+    - Passing objects around works. One condition: C++ functions that work on said objects, cannot accept references.
+    - Only pass by value or pointer.
 
-    -Passing objects around works. One condition: C++ functions that work on said objects, cannot accept references.
-    
-      -Only pass by value or pointer.
--Calling Lua functions
+- Calling Lua functions
 
--Calling C++ functions
+- Calling C++ functions
 
 Examples
 ========

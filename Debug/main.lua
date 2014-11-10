@@ -16,6 +16,8 @@ print("dot: "..dot(5, 2, 3, 7))
 print(m.first)
 print(m.second)
 
+j[2] = {2, 3}
+
 function printSomething(x, y)
 	print("x: "..x)
 	print("y: "..y)

@@ -2,6 +2,12 @@
 
 #include "LuaCpp/LuaCpp.hpp"
 
+template<typename T>
+struct Vector2
+{
+	T x, y;
+};
+
 float dot(float oneX, float oneY, float twoX, float twoY)
 {
 	return oneX * twoX + oneY * twoY;
@@ -49,14 +55,19 @@ int main(int argc, char **argv)
 	
 	// Get value of Lua variables
 	std::string str0 = luaState["i"];
-	std::string str1 = luaState["j"][1];
-	std::string str2 = luaState["j"][2];
-	std::string str3 = luaState["j"][3];
-	
 	std::cout << str0 << '\n';
+	
+	std::string str1 = luaState["j"][1];
 	std::cout << str1 << '\n';
+	
+	std::string str2 = luaState["j"][2][1];
 	std::cout << str2 << '\n';
+	
+	std::string str3 = luaState["j"][2][2];
 	std::cout << str3 << '\n';
+	
+	std::string str4 = luaState["j"][3];
+	std::cout << str4 << '\n';
 	
 	std::vector<int> nums = luaState["nums"];
 	

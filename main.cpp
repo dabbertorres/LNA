@@ -8,9 +8,16 @@ struct Vector2
 	T x, y;
 };
 
+using Vector2i = Vector2<int>;
+
 float dot(float oneX, float oneY, float twoX, float twoY)
 {
 	return oneX * twoX + oneY * twoY;
+}
+
+void say(std::string msg)
+{
+	std::cout << msg << '\n';
 }
 
 int main(int argc, char **argv)
@@ -27,6 +34,7 @@ int main(int argc, char **argv)
 																	return x + y;
 																});
 	luaState["dot"] = &dot;
+	luaState["say"] = &say;
 	
 	// assign values to Lua variables
 	luaState["i"] = 9;

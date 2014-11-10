@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "Details.hpp"
-#include "LuaValue.hpp"
 
 namespace lpp
 {
@@ -75,6 +74,8 @@ namespace lpp
 				lua_pushcclosure(state, luaDispatcher, 1);
 				
 				lua_setglobal(state, name.c_str());
+				
+				lua_settop(state, 0);
 			}
 			
 			~CppFunction() {}
@@ -82,6 +83,7 @@ namespace lpp
 			virtual int run(lua_State* state)
 			{
 				std::tuple<Args...> args = detail::getArgs<Args...>(state);
+				detail::tupleToPack(function, args);
 				return 0;
 			}
 

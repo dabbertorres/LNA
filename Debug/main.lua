@@ -18,6 +18,8 @@ print(m.second)
 
 j[2] = {2, 3}
 
+say("hello from Lua!")
+
 function printSomething(x, y)
 	print("x: "..x)
 	print("y: "..y)

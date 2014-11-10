@@ -4,39 +4,60 @@
 #include <vector>
 #include <map>
 #include <functional>
-
+#include <iostream>
 namespace detail
-{	
+{
+	template<typename First, typename... Args>
+	void distributeArgs(lua_State* state, First first, Args... args);
+	
+	// indice building
+	template<std::size_t... Is>
+	struct indices {};
+
+	template<std::size_t N, std::size_t... Is>
+	struct indicesBuilder : indicesBuilder<N - 1, N - 1, Is...> {};
+
+	template<std::size_t... Is>
+	struct indicesBuilder<0, Is...>
+	{
+		using type = indices<Is...>;
+	};
+	
 	// pushing primitives
-	inline void pushValue(lua_State* state, bool b)
+	inline int pushValue(lua_State* state, bool b)
 	{
 		lua_pushboolean(state, b);
+		return 1;
 	}
 	
-	inline void pushValue(lua_State* state, int i)
+	inline int pushValue(lua_State* state, int i)
 	{
 		lua_pushinteger(state, i);
+		return 1;
 	}
 	
-	inline void pushValue(lua_State* state, unsigned int ui)
+	inline int pushValue(lua_State* state, unsigned int ui)
 	{
 		lua_pushunsigned(state, ui);
+		return 1;
 	}
 	
-	inline void pushValue(lua_State* state, lua_Number n)
+	inline int pushValue(lua_State* state, lua_Number n)
 	{
 		lua_pushnumber(state, n);
+		return 1;
 	}
 	
-	inline void pushValue(lua_State* state, const std::string& s)
+	inline int pushValue(lua_State* state, const std::string& s)
 	{
 		lua_pushlstring(state, s.c_str(), s.size());
+		return 1;
 	}
 	
 	// pushing vectors
 	// "i + 1" here is to convert to Lua's tables starting at 1, not 0
 	template<typename T>
-	inline void pushValue(lua_State* state, const std::vector<T>& vec)
+	inline int pushValue(lua_State* state, const std::vector<T>& vec)
 	{
 		lua_createtable(state, vec.size(), 0);
 		
@@ -45,11 +66,13 @@ namespace detail
 			pushValue(state, vec[i]);
 			lua_rawseti(state, -2, i + 1);
 		}
+		
+		return 1;
 	}
 	
 	// pushing maps
 	template<typename K, typename V>
-	inline void pushValue(lua_State* state, const std::map<K, V>& map)
+	inline int pushValue(lua_State* state, const std::map<K, V>& map)
 	{
 		lua_createtable(state, map.size(), 0);
 		
@@ -59,25 +82,37 @@ namespace detail
 			pushValue(state, v.second);
 			lua_rawset(state, -3);
 		}
+		
+		return 1;
+	}
+	
+	// push tuple
+	template<typename... T>
+	inline int pushValue(lua_State* state, const std::tuple<T...>& tup)
+	{
+		return pushValue(state, tup, typename indicesBuilder<sizeof...(T)>::type());
+	}
+	
+	template<typename... T, std::size_t... N>
+	inline int pushValue(lua_State* state, const std::tuple<T...>& tup, indices<N...>)
+	{
+		distributeArgs(state, std::get<N>(tup)...);
+		return sizeof...(N);
 	}
 	
 	// pushing objects
 	template<typename T>
-	inline void pushValue(lua_State* state, T* t)
+	inline int pushValue(lua_State* state, const T* t)
 	{
 		lua_pushlightuserdata(state, t);
+		return 1;
 	}
 	
 	template<typename T>
-	inline void pushValue(lua_State* state, T& t)
-	{
-		lua_pushlightuserdata(state, &t);
-	}
-	
-	template<typename T>
-	inline void pushValue(lua_State* state, const T& t)
+	inline int pushValue(lua_State* state, const T& t)
 	{
 		lua_pushlightuserdata(state, &const_cast<T&>(t));
+		return 1;
 	}
 	
 	// recursive argument distribution
@@ -191,20 +226,8 @@ namespace detail
 	{
 		return *static_cast<T*>(lua_touserdata(state, idx));
 	}
-	
+
 	// getting arguments
-	template<std::size_t... Is>
-	struct indices {};
-
-	template<std::size_t N, std::size_t... Is>
-	struct indicesBuilder : indicesBuilder<N - 1, N - 1, Is...> {};
-
-	template<std::size_t... Is>
-	struct indicesBuilder<0, Is...>
-	{
-		using type = indices<Is...>;
-	};
-
 	template<typename... T, std::size_t... N>
 	std::tuple<T...> getArgs(lua_State* state, indices<N...>)
 	{

@@ -25,6 +25,11 @@ void say(std::string msg)
 	std::cout << msg << '\n';
 }
 
+std::tuple<int, int> twoNums()
+{
+	return std::make_tuple(5, 3);
+}
+
 int main(int argc, char **argv)
 {
 	lpp::State luaState;
@@ -41,6 +46,7 @@ int main(int argc, char **argv)
 	luaState["dot"] = &dot;
 	luaState["dotVec"] = &dotVec;
 	luaState["say"] = &say;
+	luaState["twoNums"] = &twoNums;
 	
 	// assign values to Lua variables
 	luaState["i"] = 9;

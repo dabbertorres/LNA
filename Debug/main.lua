@@ -22,6 +22,10 @@ say("hello from Lua!")
 
 print("dotVec: "..dotVec(vec1, vec2))
 
+x, y = twoNums()
+print("xt: "..x)
+print("yt: "..y)
+
 function printSomething(x, y)
 	print("x: "..x)
 	print("y: "..y)

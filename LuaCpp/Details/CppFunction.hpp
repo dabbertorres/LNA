@@ -7,7 +7,7 @@
 #include <functional>
 #include <unordered_map>
 #include <memory>
-
+#include <iostream>
 #include "Details.hpp"
 
 namespace lpp
@@ -30,9 +30,8 @@ namespace lpp
 	class CppFunction : public BaseCppFunction
 	{
 		public:
-			CppFunction(lua_State* s, const std::string& n, const std::function<Ret(Args...)>& f)
+			CppFunction(lua_State* s, const std::string& name, const std::function<Ret(Args...)>& f)
 			:	state(s),
-				name(n),
 				function(f)
 			{
 				lua_pushlightuserdata(state, static_cast<BaseCppFunction*>(this));
@@ -49,14 +48,13 @@ namespace lpp
 			virtual int run(lua_State* state)
 			{
 				std::tuple<Args...> args = detail::getArgs<Args...>(state);
-				auto value = detail::tupleToPack(function, args);
-				detail::distributeArgs(state, value);
-				return 1;
+				Ret value = detail::tupleToPack(function, args);
+				int nret = detail::pushValue(state, value);
+				return nret;
 			}
 
 		private:
 			lua_State* state;
-			std::string name;
 			const std::function<Ret(Args...)> function;
 	};
 	
@@ -64,9 +62,8 @@ namespace lpp
 	class CppFunction<void, Args...> : public BaseCppFunction
 	{
 		public:
-			CppFunction(lua_State* s, const std::string& n, const std::function<void(Args...)>& f)
+			CppFunction(lua_State* s, const std::string& name, const std::function<void(Args...)>& f)
 			:	state(s),
-				name(n),
 				function(f)
 			{
 				lua_pushlightuserdata(state, static_cast<BaseCppFunction*>(this));
@@ -89,7 +86,6 @@ namespace lpp
 
 		private:
 			lua_State* state;
-			std::string name;
 			const std::function<void(Args...)> function;
 	};
 }

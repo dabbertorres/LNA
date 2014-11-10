@@ -133,10 +133,16 @@ namespace lpp
 	template<typename T>
 	Selection::operator T() const
 	{
+		T ret;
 		if(index == 0)
+		{
 			lua_getglobal(state, name.c_str());
-		
-		T ret = detail::checkGet(detail::id<T>{}, state);
+			ret = detail::checkGet(detail::id<T>{}, state);
+		}
+		else
+		{
+			ret = detail::checkGet(detail::id<T>{}, state, index);
+		}
 		
 		lua_settop(state, 0);
 		return ret;
@@ -145,55 +151,39 @@ namespace lpp
 	template<typename T>
 	Selection::operator std::vector<T>() const
 	{
+		std::vector<T> ret;
+		
 		if(index == 0)
-			lua_getglobal(state, name.c_str());
-			
-		if(!lua_istable(state, -1))
-			luaL_error(state, "Value on top of stack is not a table");
-		
-		std::vector<T> newVec;
-		
-		std::size_t tableLength = lua_rawlen(state, -1);
-		
-		for(unsigned int i = 1; i <= tableLength; i++)
 		{
-			lua_rawgeti(state, -1, i);
-			
-			T t = detail::checkGet(detail::id<T>{}, state);
-			
-			newVec.push_back(t);
-			
-			lua_pop(state, 1);
+			lua_getglobal(state, name.c_str());
+			ret = detail::checkGet(detail::id<std::vector<T>>{}, state);
+		}
+		else
+		{
+			ret = detail::checkGet(detail::id<std::vector<T>>{}, state, index);
 		}
 		
 		lua_settop(state, 0);
-		return newVec;
+		return ret;
 	}
 			
 	template<typename K, typename V>
 	Selection::operator std::map<K, V>() const
 	{
+		std::map<K, V> ret;
+		
 		if(index == 0)
-			lua_getglobal(state, name.c_str());
-		
-		if(!lua_istable(state, -1))
-			luaL_error(state, "Value on top of stack is not a table");
-		
-		std::map<K, V> newMap;
-		
-		lua_pushnil(state);
-		while(lua_next(state, -2))
 		{
-			K key = detail::checkGet(detail::id<K>{}, state, -2);
-			
-			V val = detail::checkGet(detail::id<V>{}, state);
-			
-			newMap.emplace(key, val);
-			lua_pop(state, 1);
+			lua_getglobal(state, name.c_str());
+			ret = detail::checkGet(detail::id<std::map<K, V>>{}, state);
+		}
+		else
+		{
+			ret = detail::checkGet(detail::id<std::map<K, V>>{}, state, index);
 		}
 		
 		lua_settop(state, 0);
-		return newMap;
+		return ret;
 	}
 }
 

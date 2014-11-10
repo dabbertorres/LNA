@@ -110,6 +110,62 @@ namespace detail
 		return {buff, size};
 	}
 	
+	// tables
+	template<typename T>
+	inline std::vector<T> checkGet(id<std::vector<T>>, lua_State* state, std::size_t idx = -1)
+	{
+		if(!lua_istable(state, idx))
+		{
+			std::string msg = "Value at " + std::to_string(idx) + " of stack is not a table";
+			luaL_error(state, msg.c_str());
+		}
+		
+		std::vector<T> newVec;
+		
+		std::size_t tableLength = lua_rawlen(state, idx);
+		
+		for(unsigned int i = 1; i <= tableLength; i++)
+		{
+			lua_rawgeti(state, idx, i);
+			
+			T t = checkGet(id<T>{}, state);
+			
+			newVec.push_back(t);
+			
+			lua_pop(state, 1);
+		}
+		
+		return newVec;
+	}
+	
+	template<typename K, typename V>
+	inline std::map<K, V> checkGet(id<std::map<K, V>>, lua_State* state, std::size_t idx = -1)
+	{
+		if(!lua_istable(state, idx))
+		{
+			std::string msg = "Value at " + std::to_string(idx) + " of stack is not a table";
+			luaL_error(state, msg.c_str());
+		}
+		
+		std::map<K, V> newMap;
+		
+		lua_pushnil(state);
+		while(lua_next(state, idx - 1))
+		{
+			// copy the key so it doesn't get converted, making lua_next fail
+			lua_pushvalue(state, -2);
+			
+			K key = checkGet(id<K>{}, state);
+			
+			V val = checkGet(id<V>{}, state, -2);
+			
+			newMap.emplace(key, val);
+			lua_pop(state, 2);
+		}
+		
+		return newMap;
+	}
+	
 	// objects
 	template<typename T>
 	inline T checkGet(id<T>, lua_State* state, std::size_t idx = -1)

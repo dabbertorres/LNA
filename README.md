@@ -11,7 +11,7 @@ std containers and Lua tables. We'll see how that goes.
 What's Working
 ==============
 - Getting variables/values to/from Lua/C++
-(including std::vector and std::map atm)
+(including std::vector and std::map at the moment)
 
 - Simple lightuserdata implementation
     - Passing objects around works. One condition: C++ functions that work on said objects, cannot accept references.

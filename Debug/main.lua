@@ -11,6 +11,7 @@ nums = {3, 2, 1}
 map = {hi = 5, world = 3}
 
 print("add: "..add(1, 3))
+print("dot: "..dot(5, 2, 3, 7))
 
 print(m.first)
 print(m.second)
@@ -21,7 +22,7 @@ function printSomething(x, y)
 end
 
 function sayHello()
-	print("hello!")
+	return ("hello!")
 end
 
 function return2Nums()

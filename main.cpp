@@ -2,15 +2,9 @@
 
 #include "LuaCpp/LuaCpp.hpp"
 
-template<typename Type>
-struct Vector2D
+float dot(float oneX, float oneY, float twoX, float twoY)
 {
-	Type x, y;
-};
-
-int add(int x, int y)
-{
-	return x + y;
+	return oneX * twoX + oneY * twoY;
 }
 
 int main(int argc, char **argv)
@@ -21,29 +15,37 @@ int main(int argc, char **argv)
 	luaState.openLib("string", luaopen_string);
 	luaState.openLib("table", luaopen_table);
 	
-	// load a file
-	luaState.loadFile("main.lua");
-	
 	// assign a Lua variable to C++ function
-	luaState["add"] = static_cast<std::function<int(int, int)>>(add);
+	luaState["add"] = static_cast<std::function<int(int, int)>>([](int x, int y) -> int
+																{
+																	return x + y;
+																});
+	luaState["dot"] = &dot;
 	
 	// assign values to Lua variables
 	luaState["i"] = 9;
 	luaState["j"] = std::vector<int>{5, 3, 2};
 	luaState["m"] = std::map<std::string, std::string>{{"first", "hello"}, {"second", "world"}};
 	
-	// assign C++ object to Lua variable
-	Vector2D<int> vec2d{10, 4};
-	luaState["vec2d"] = vec2d;
+	if(luaState("print(j[2])") != LUA_OK)
+	{
+		std::cout << luaState.getErrors() << '\n';
+		return 1;
+	}
+	
+	// load a file and catch syntax errors
+	if(luaState.loadFile("main.lua") != LUA_OK)
+	{
+		std::cout << luaState.getErrors() << '\n';
+		return 1;
+	}
 	
 	// run the file
-	luaState.run();
-	
-	// C++ object set from Lua variable
-	Vector2D<int>* anotherVec2d = luaState["vec2d"];
-	
-	std::cout << "vec2d.x: " << anotherVec2d->x << '\n';
-	std::cout << "vec2d.y: " << anotherVec2d->y << '\n';
+	if(luaState.run() != LUA_OK)
+	{
+		std::cout << luaState.getErrors() << '\n';
+		return 1;
+	}
 	
 	// Get value of Lua variables
 	std::string str0 = luaState["i"];
@@ -68,10 +70,14 @@ int main(int argc, char **argv)
 	
 	// call lua function
 	luaState["printSomething"](1, 7);
-	luaState["sayHello"]();
+	std::string hello = luaState["sayHello"]();
+	std::cout << hello << '\n';
 	
 	int one, two;
-	//std::tie(one, two) = luaState["return2Nums"]();
+	std::tie(one, two) = luaState["return2Nums"]().getMultiReturn<int, int>();
+	
+	std::cout << "one: " << one << '\n';
+	std::cout << "two: " << two << '\n';
 	
 	return 0;
 }

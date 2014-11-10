@@ -11,23 +11,18 @@ namespace lpp
 
 	State::~State()
 	{
+		lua_settop(state, 0);
 		lua_close(state);
 	}
 	
-	bool State::loadFile(const std::string& f)
+	auto State::loadFile(const std::string& f) -> decltype(LUA_OK)
 	{
-		if(luaL_loadfile(state, f.c_str()))
-			return false;
-		else
-			return true;
+		return luaL_loadfile(state, f.c_str());
 	}
 	
-	bool State::run()
+	auto State::run() -> decltype(LUA_OK)
 	{
-		if(lua_pcall(state, 0, 0, 0))
-			return false;
-		else
-			return true;
+		return lua_pcall(state, 0, 0, 0);
 	}
 	
 	void State::openLib(const std::string& name, lua_CFunction open)
@@ -41,22 +36,32 @@ namespace lpp
 		return Selection(state, name);
 	}
 	
+	auto State::operator() (const std::string& name) -> decltype(LUA_OK)
+	{
+		luaL_loadstring(state, name.c_str());
+		return lua_pcall(state, 0, 0, 0);
+	}
+	
 	std::string State::getErrors() const
 	{
+		std::string msg = "";
+		
 		if(!lua_isnone(state, -1))
 		{
 			std::size_t size;
 			const char* buff = lua_tolstring(state, -1, &size);
-			lua_pop(state, 1);
-			return {buff, size};
+			msg = {buff, size};
 		}
-		else
-			return "";
+		
+		lua_pop(state, 1);
+		return msg;
 	}
 	
 	void State::stackDump() const
 	{
 		int top = lua_gettop(state);
+			
+		std::cerr << "Stack is:\n";
 		
 		for(int i = 1; i <= top; i++)
 		{
@@ -65,30 +70,19 @@ namespace lpp
 			switch(type)
 			{
 				case LUA_TNIL:
-					std::cout << i << ": nil\n";
+					std::cerr << i << ": nil\n";
 					break;
 				case LUA_TNUMBER:
-					std::cout << i << ": number = " << lua_tonumber(state, i) << '\n';
+					std::cerr << i << ": number = " << lua_tonumber(state, i) << '\n';
 					break;
 				case LUA_TBOOLEAN:
-					std::cout << i << ": bool = " << (lua_toboolean(state, i) ? "true" : "false") << '\n';
+					std::cerr << i << ": bool = " << (lua_toboolean(state, i) ? "true" : "false") << '\n';
 					break;
 				case LUA_TSTRING:
-					std::cout << i << ": string = " << lua_tostring(state, i) << '\n';
+					std::cerr << i << ": string = " << lua_tostring(state, i) << '\n';
 					break;
-				case LUA_TTABLE:
-					std::cout << i << ": table = {";
-					
-					lua_pushnil(state);
-					while(lua_next(state, -2))
-					{
-						std::cout << lua_tostring(state, -2) << " = " << lua_tostring(state, -1) << ", ";
-						lua_pop(state, 1);
-					}
-					
-					std::cout << "}\n";
 				default:
-					std::cout << i << ": " << lua_typename(state, i) << '\n';
+					std::cerr << i << ": " << lua_typename(state, i) << '\n';
 					break;
 			}
 		}

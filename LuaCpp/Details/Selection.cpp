@@ -30,7 +30,7 @@ namespace lpp
 		lua_pushlstring(state, n.c_str(), n.size());
 		lua_rawget(state, -2);
 		
-		return Selection(state, newName);
+		return Selection(state, newName, -1);
 	}
 	
 	Selection Selection::operator [](const int i) const

@@ -41,6 +41,8 @@ namespace lpp
 				lua_pushcclosure(state, luaDispatcher, 1);
 				
 				lua_setglobal(state, name.c_str());
+				
+				lua_settop(state, 0);
 			}
 			
 			~CppFunction() {}

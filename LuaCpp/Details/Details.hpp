@@ -1,6 +1,9 @@
 #ifndef DETAILS_HPP
 #define DETAILS_HPP
 
+#include <vector>
+#include <map>
+
 namespace detail
 {	
 	// pushing primitives
@@ -29,6 +32,34 @@ namespace detail
 		lua_pushlstring(state, s.c_str(), s.size());
 	}
 	
+	// pushing vectors
+	// "i + 1" here is to convert to Lua's tables starting at 1, not 0
+	template<typename T>
+	inline void pushValue(lua_State* state, const std::vector<T>& vec)
+	{
+		lua_createtable(state, vec.size(), 0);
+		
+		for(unsigned int i = 0; i < vec.size(); i++)
+		{
+			pushValue(state, vec[i]);
+			lua_rawseti(state, -2, i + 1);
+		}
+	}
+	
+	// pushing maps
+	template<typename K, typename V>
+	inline void pushValue(lua_State* state, const std::map<K, V>& map)
+	{
+		lua_createtable(state, map.size(), 0);
+		
+		for(auto& v : map)
+		{
+			pushValue(state, v.first);
+			pushValue(state, v.second);
+			lua_rawset(state, -3);
+		}
+	}
+	
 	// pushing objects
 	template<typename T>
 	inline void pushValue(lua_State* state, T* t)
@@ -52,10 +83,11 @@ namespace detail
 		distributeArgs(state, args...);
 	}
 	
-	// checking functions
+	// getter functions
 	template<typename T>
 	struct id {};
-
+	
+	// primitives
 	inline int checkGet(id<int>, lua_State* state, std::size_t idx = -1)
 	{
 		return luaL_checkint(state, idx);
@@ -76,6 +108,13 @@ namespace detail
 		std::size_t size;
 		const char* buff = luaL_checklstring(state, idx, &size);
 		return {buff, size};
+	}
+	
+	// objects
+	template<typename T>
+	inline T checkGet(id<T>, lua_State* state, std::size_t idx = -1)
+	{
+		return static_cast<T>(lua_touserdata(state, idx));
 	}
 
 	template<typename T>

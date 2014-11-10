@@ -13,15 +13,25 @@ namespace lpp
 	{
 		public:
 			State();
+			
+			// non-copyable
+			State(const State&) = delete;
+			State& operator =(const State&) = delete;
+			
 			~State();
 			
-			bool loadFile(const std::string& f);
+			// comparing a state to another doesn't make much sense
+			bool operator ==(State&) = delete;
 			
-			bool run();
+			auto loadFile(const std::string& f) -> decltype(LUA_OK);
+			
+			auto run() -> decltype(LUA_OK);
 
 			void openLib(const std::string& name, lua_CFunction open);
 
 			Selection operator[](const std::string& name);
+			
+			auto operator() (const std::string& name) -> decltype(LUA_OK);
 			
 			std::string getErrors() const;
 			void stackDump() const;

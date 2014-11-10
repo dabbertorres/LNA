@@ -11,7 +11,6 @@
 
 #include "Details.hpp"
 #include "CppFunction.hpp"
-#include "LuaFunction.hpp"
 
 namespace lpp
 {
@@ -24,8 +23,12 @@ namespace lpp
 			~Selection();
 			
 			// lua function call
-			template<typename... Ret, typename... Args>
-			std::tuple<Ret...> operator()(Args... args);
+			template<typename... Args>
+			Selection operator()(Args... args);
+			
+			// get multiple results from a Lua function
+			template<typename... Ret>
+			std::tuple<Ret...> getMultiReturn();
 			
 			// assignment operators
 			template<typename T>
@@ -34,16 +37,12 @@ namespace lpp
 			template<typename T>
 			void operator =(const T& t);
 			
-			// assigning Lua table from C++ containers
-			template<typename T>
-			void operator =(const std::vector<T>& vec);
-
-			template<typename K, typename V>
-			void operator =(const std::map<K, V>& map);
-			
 			// assigning Lua variable to C++ function
 			template<typename Ret, typename... Args>
 			void operator =(const std::function<Ret(Args...)>& f);
+			
+			template<typename Ret, typename... Args>
+			void operator =(Ret (*f)(Args... args));
 			
 			// casting to types
 			template<typename T>
@@ -66,21 +65,38 @@ namespace lpp
 	};
 	
 	// calling Lua function
-	template<typename... Ret, typename... Args>
-	std::tuple<Ret...> Selection::operator()(Args... args)
+	template<typename... Args>
+	Selection Selection::operator()(Args... args)
 	{
 		lua_getglobal(state, name.c_str());
 		
 		detail::distributeArgs(state, args...);
 		
 		constexpr int nargs = sizeof...(Args);
-		constexpr int nret = sizeof...(Ret);
 		
-		lua_pcall(state, nargs, nret, 0);
+		if(lua_pcall(state, nargs, LUA_MULTRET, 0) != LUA_OK)
+		{
+			std::size_t size;
+			const char* buff = lua_tolstring(state, -1, &size);
+			std::string msg = {buff, size};
+			luaL_error(state, msg.c_str());
+		}
 		
-		std::tuple<Ret...> final;
+		const int nrets = lua_gettop(state);
 		
-		return final;
+		if(nrets == 0)
+			return Selection(state, "");
+		else if(nrets == 1)
+			return Selection(state, name + " return", -1);
+		else
+			return Selection(state, name + " return", -nrets);
+	}
+	
+	// get multiple results from a Lua function
+	template<typename... Ret>
+	std::tuple<Ret...> Selection::getMultiReturn()
+	{
+		return detail::getArgs<Ret...>(state);
 	}
 	
 	// pushing primitives
@@ -89,6 +105,7 @@ namespace lpp
 	{
 		detail::pushValue(state, t);
 		lua_setglobal(state, name.c_str());
+		lua_settop(state, 0);
 	}
 	
 	template<typename T>
@@ -96,38 +113,7 @@ namespace lpp
 	{
 		detail::pushValue(state, t);
 		lua_setglobal(state, name.c_str());
-	}
-	
-	// vector to table assignment
-	// "i + 1" here is to convert to Lua's tables starting at 1, not 0
-	template<typename T>
-	void Selection::operator =(const std::vector<T>& vec)
-	{
-		lua_createtable(state, vec.size(), 0);
-		
-		for(unsigned int i = 0; i < vec.size(); i++)
-		{
-			detail::pushValue(state, vec[i]);
-			lua_rawseti(state, -2, i + 1);
-		}
-		
-		lua_setglobal(state, name.c_str());		
-	}
-	
-	// map to table assignment
-	template<typename K, typename V>
-	void Selection::operator =(const std::map<K, V>& map)
-	{
-		lua_createtable(state, map.size(), 0);
-		
-		for(auto& v : map)
-		{
-			detail::pushValue(state, v.first);
-			detail::pushValue(state, v.second);
-			lua_rawset(state, -3);
-		}
-		
-		lua_setglobal(state, name.c_str());		
+		lua_settop(state, 0);
 	}
 	
 	// assignment of Lua variable to C++ function
@@ -137,6 +123,13 @@ namespace lpp
 		BaseCppFunction::functions.emplace(name, std::unique_ptr<BaseCppFunction>(new CppFunction<Ret, Args...>(state, name, f)));
 	}
 	
+	template<typename Ret, typename... Args>
+	void Selection::operator =(Ret (*f)(Args... args))
+	{
+		BaseCppFunction::functions.emplace(name, std::unique_ptr<BaseCppFunction>(new CppFunction<Ret, Args...>(state, name, f)));
+	}
+	
+	// casting
 	template<typename T>
 	Selection::operator T() const
 	{
@@ -145,7 +138,7 @@ namespace lpp
 		
 		T ret = detail::checkGet(detail::id<T>{}, state);
 		
-		lua_pop(state, 1);
+		lua_settop(state, 0);
 		return ret;
 	}
 	

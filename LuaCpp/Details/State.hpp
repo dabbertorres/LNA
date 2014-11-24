@@ -1,5 +1,5 @@
-#ifndef STATE_HPP
-#define STATE_HPP
+#ifndef LUA_STATE_HPP
+#define LUA_STATE_HPP
 
 #include <lua.hpp>
 
@@ -47,16 +47,20 @@ namespace lpp
 			// pull from the stack an error message and return it (if one exists)
 			std::string getErrors() const;
 			
-			// mainly for debugging, dumps the current stack to cout
-			void stackDump() const;
-			
 			// act as a lua_State
 			operator lua_State*() const;
+			
+			// reset the Lua state
+			void reload();
 
 		private:
 			void clean();
 
 			lua_State* state;
+			
+			using FunctionsMap = std::unordered_map<std::string, std::unique_ptr<BaseCppFunction>>;
+			
+			FunctionsMap functions;
 	};
 }
 

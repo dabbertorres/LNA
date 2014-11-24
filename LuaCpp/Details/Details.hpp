@@ -1,10 +1,12 @@
 #ifndef DETAILS_HPP
 #define DETAILS_HPP
 
+#include <lua.hpp>
+
 #include <vector>
 #include <map>
 #include <functional>
-#include <iostream>
+
 namespace detail
 {
 	template<typename First, typename... Args>
@@ -86,37 +88,41 @@ namespace detail
 		return 1;
 	}
 	
-	// push tuple
-	template<typename... T>
-	inline int pushValue(lua_State* state, const std::tuple<T...>& tup)
-	{
-		return pushValue(state, tup, typename indicesBuilder<sizeof...(T)>::type());
-	}
-	
-	template<typename... T, std::size_t... N>
-	inline int pushValue(lua_State* state, const std::tuple<T...>& tup, indices<N...>)
-	{
-		distributeArgs(state, std::get<N>(tup)...);
-		return sizeof...(N);
-	}
-	
 	// pushing objects
 	template<typename T>
-	inline int pushValue(lua_State* state, const T* t)
+	inline int pushValue(lua_State* state, T* t)
 	{
-		lua_pushlightuserdata(state, t);
+		if(t)
+			lua_pushlightuserdata(state, t);
+		else
+			lua_pushnil(state);
+		
 		return 1;
 	}
 	
 	template<typename T>
-	inline int pushValue(lua_State* state, const T& t)
+	inline int pushValue(lua_State* state, T& t)
 	{
-		lua_pushlightuserdata(state, &const_cast<T&>(t));
+		lua_pushlightuserdata(state, &t);
 		return 1;
+	}
+	
+	// push tuple
+	template<typename... Ts>
+	inline int pushValue(lua_State* state, std::tuple<Ts...>& tup)
+	{
+		return pushValue(state, tup, typename indicesBuilder<sizeof...(Ts)>::type());
+	}
+	
+	template<typename... Ts, std::size_t... N>
+	inline int pushValue(lua_State* state, const std::tuple<Ts...>& tup, indices<N...>)
+	{
+		distributeArgs(state, std::get<N>(tup)...);
+		return sizeof...(Ts);
 	}
 	
 	// recursive argument distribution
-	inline void distributeArgs(lua_State* state) {};
+	inline void distributeArgs(lua_State*) {};
 			
 	template<typename First, typename... Args>
 	inline void distributeArgs(lua_State* state, First first, Args... args)
@@ -130,22 +136,22 @@ namespace detail
 	struct id {};
 	
 	// primitives
-	inline int checkGet(id<int>, lua_State* state, std::size_t idx = -1)
+	inline int checkGet(id<int>, lua_State* state, int idx = -1)
 	{
 		return luaL_checkint(state, idx);
 	}
 
-	inline unsigned int checkGet(id<unsigned int>, lua_State* state, std::size_t idx = -1)
+	inline unsigned int checkGet(id<unsigned int>, lua_State* state, int idx = -1)
 	{
 		return luaL_checkunsigned(state, idx);
 	}
 
-	inline lua_Number checkGet(id<lua_Number>, lua_State* state, std::size_t idx = -1)
+	inline lua_Number checkGet(id<lua_Number>, lua_State* state, int idx = -1)
 	{
 		return luaL_checknumber(state, idx);
 	}
 
-	inline std::string checkGet(id<std::string>, lua_State* state, std::size_t idx = -1)
+	inline std::string checkGet(id<std::string>, lua_State* state, int idx = -1)
 	{
 		std::size_t size;
 		const char* buff = luaL_checklstring(state, idx, &size);
@@ -154,7 +160,7 @@ namespace detail
 	
 	// tables
 	template<typename T>
-	inline std::vector<T> checkGet(id<std::vector<T>>, lua_State* state, std::size_t idx = -1)
+	inline std::vector<T> checkGet(id<std::vector<T>>, lua_State* state, int idx = -1)
 	{
 		if(!lua_istable(state, idx))
 		{
@@ -181,7 +187,7 @@ namespace detail
 	}
 	
 	template<typename K, typename V>
-	inline std::map<K, V> checkGet(id<std::map<K, V>>, lua_State* state, std::size_t idx = -1)
+	inline std::map<K, V> checkGet(id<std::map<K, V>>, lua_State* state, int idx = -1)
 	{
 		if(!lua_istable(state, idx))
 		{
@@ -210,19 +216,19 @@ namespace detail
 	
 	// objects
 	template<typename T>
-	inline T checkGet(id<T>, lua_State* state, std::size_t idx = -1)
+	inline T checkGet(id<T>, lua_State* state, int idx = -1)
 	{
 		return static_cast<T>(lua_touserdata(state, idx));
 	}
 
 	template<typename T>
-	inline T* checkGet(id<T*>, lua_State* state, std::size_t idx = -1)
+	inline T* checkGet(id<T*>, lua_State* state, int idx = -1)
 	{
 		return static_cast<T*>(lua_touserdata(state, idx));
 	}
 
 	template<typename T>
-	inline T& checkGet(id<T&>, lua_State* state, std::size_t idx = -1)
+	inline T& checkGet(id<T&>, lua_State* state, int idx = -1)
 	{
 		return *static_cast<T*>(lua_touserdata(state, idx));
 	}
@@ -231,7 +237,7 @@ namespace detail
 	template<typename... T, std::size_t... N>
 	std::tuple<T...> getArgs(lua_State* state, indices<N...>)
 	{
-		return std::make_tuple(detail::checkGet(id<T>{}, state, N + 1)...);
+		return std::make_tuple(checkGet(id<T>{}, state, N + 1)...);
 	}
 
 	template<typename... T>

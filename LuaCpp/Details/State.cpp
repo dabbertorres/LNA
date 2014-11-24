@@ -1,7 +1,5 @@
 #include "State.hpp"
 
-#include <iostream>
-
 namespace lpp
 {
 	State::State()
@@ -33,7 +31,7 @@ namespace lpp
 	
 	Selection State::operator[](const std::string& name)
 	{
-		return Selection(state, name);
+		return Selection(state, name, functions);
 	}
 	
 	auto State::operator() (const std::string& name) -> decltype(LUA_OK)
@@ -57,40 +55,16 @@ namespace lpp
 		return msg;
 	}
 	
-	void State::stackDump() const
-	{
-		int top = lua_gettop(state);
-			
-		std::cerr << "Stack is:\n";
-		
-		for(int i = 1; i <= top; i++)
-		{
-			int type = lua_type(state, i);
-			
-			switch(type)
-			{
-				case LUA_TNIL:
-					std::cerr << i << ": nil\n";
-					break;
-				case LUA_TNUMBER:
-					std::cerr << i << ": number = " << lua_tonumber(state, i) << '\n';
-					break;
-				case LUA_TBOOLEAN:
-					std::cerr << i << ": bool = " << (lua_toboolean(state, i) ? "true" : "false") << '\n';
-					break;
-				case LUA_TSTRING:
-					std::cerr << i << ": string = " << lua_tostring(state, i) << '\n';
-					break;
-				default:
-					std::cerr << i << ": " << lua_typename(state, i) << '\n';
-					break;
-			}
-		}
-	}
-	
 	State::operator lua_State*() const
 	{
 		return state;
+	}
+	
+	void State::reload()
+	{
+		lua_close(state);
+		state = luaL_newstate();
+		functions.clear();
 	}
 	
 	void State::clean()

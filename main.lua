@@ -1,17 +1,26 @@
-print(i)
+print("i: "..i)
 
 i = 5 + 2
 
+print("i: "..i..'\n')
+
 for i, v in ipairs(j) do
-	print(v)
+	print("j["..i.."]: "..v)
 end
+
+b = true
+
+vec = Vector2i.new(5, 3)
+
+print("\nLua:")
+print("vec:x: "..vec:x())
+print("vec:y: "..vec:y())
 
 nums = {3, 2, 1}
 
 map = {hi = 5, world = 3}
 
-print("add: "..add(1, 3))
-print("dot: "..dot(5, 2, 3, 7))
+print("\ndot: "..dot(5, 2, 3, 7))
 
 print(m.first)
 print(m.second)

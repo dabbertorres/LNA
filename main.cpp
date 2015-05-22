@@ -5,6 +5,16 @@
 template<typename T>
 struct Vector2
 {
+	Vector2(T i, T j)
+	:	x(i),
+		y(j)
+	{}
+	
+	T length() const
+	{
+		return x * x + y * y;
+	}
+	
 	T x, y;
 };
 
@@ -33,16 +43,15 @@ std::tuple<int, int> twoNums()
 int main(int argc, char **argv)
 {
 	lpp::State luaState;
+
 	luaState.openLib("base", luaopen_base);
 	luaState.openLib("math", luaopen_math);
 	luaState.openLib("string", luaopen_string);
 	luaState.openLib("table", luaopen_table);
+	luaState.openLib("debug", luaopen_debug);
 	
-	// assign a Lua variable to C++ function
-	luaState["add"] = static_cast<std::function<int(int, int)>>([](int x, int y) -> int
-																{
-																	return x + y;
-																});
+	luaState["Vector2i"].setClass<Vector2i, int, int>("x", &Vector2i::x, "y", &Vector2i::y);
+	
 	luaState["dot"] = &dot;
 	luaState["dotVec"] = &dotVec;
 	luaState["say"] = &say;
@@ -53,7 +62,7 @@ int main(int argc, char **argv)
 	luaState["j"] = std::vector<int>{5, 3, 2};
 	luaState["m"] = std::map<std::string, std::string>{{"first", "hello"}, {"second", "world"}};
 	
-	if(luaState("print(j[2])") != LUA_OK)
+	if(luaState("print(\"j[2]: \"..j[2])") != LUA_OK)
 	{
 		std::cout << luaState.getErrors() << '\n';
 		return 1;
@@ -76,21 +85,29 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	
+	Vector2i* vec = luaState["vec"];
+	
+	std::cout	<< "\nC++:\n"
+				<< "vec:x: " << vec->x << '\n'
+				<< "vec:y: " << vec->y << '\n';
+	
+	std::cout << "\nbool: " << static_cast<bool>(luaState["b"]) << '\n';
+	
 	// Get value of Lua variables
 	std::string str0 = luaState["i"];
-	std::cout << str0 << '\n';
+	std::cout << "\ni: " << str0 << '\n';
 	
 	std::string str1 = luaState["j"][1];
-	std::cout << str1 << '\n';
+	std::cout << "\nj[1]: " << str1 << '\n';
 	
 	std::string str2 = luaState["j"][2][1];
-	std::cout << str2 << '\n';
+	std::cout << "j[2][1]: " << str2 << '\n';
 	
 	std::string str3 = luaState["j"][2][2];
-	std::cout << str3 << '\n';
+	std::cout << "j[2][2]: " << str3 << '\n';
 	
 	std::string str4 = luaState["j"][3];
-	std::cout << str4 << '\n';
+	std::cout << "j[3]: " << str4 << "\n\n";
 	
 	std::vector<int> nums = luaState["nums"];
 	
@@ -98,18 +115,20 @@ int main(int argc, char **argv)
 	
 	for(auto& n : nums)
 		std::cout << "Num: " << n << '\n';
+	std::cout << '\n';
 		
 	for(auto& it : strNums)
 		std::cout << it.first << ": " << it.second << '\n';
+	std::cout << '\n';
 	
 	// call lua function
 	luaState["printSomething"](1, 7);
 	
 	std::string hello = luaState["sayHello"]();
-	std::cout << hello << '\n';
+	std::cout << hello << "\n\n";
 	
 	int one, two;
-	std::tie(one, two) = luaState["return2Nums"]().getMultiReturn<int, int>();
+	lpp::tie(luaState["return2Nums"](), one, two);
 	
 	std::cout << "one: " << one << '\n';
 	std::cout << "two: " << two << '\n';

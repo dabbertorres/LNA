@@ -1,7 +1,8 @@
-LNA = Lua is Not an Algorithm
+LNA = Lua is Not an Acronym
 =====
+(Amazing how many people use Lua as an Acronym)
 
-another C++/Lua binding
+Yet another C++/Lua binding
 
 Syntax is heavily inspired by <a href="https://github.com/jeremyong/Selene">Selene</a>.
 

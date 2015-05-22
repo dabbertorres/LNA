@@ -30,6 +30,8 @@ print("vecOther:length: "..vecOther:length())
 print("vecOther:x: "..vecOther:x())
 print("vecOther:y: "..vecOther:y())
 
+print("dotVec: "..dotVec(vec, vecOther))
+
 nums = {3, 2, 1}
 
 map = {hi = 5, world = 3}

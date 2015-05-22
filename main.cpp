@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cmath>
 
 #include "LuaCpp/LuaCpp.hpp"
 
@@ -10,18 +11,15 @@ struct Vector2
 		y(j)
 	{}
 	
-	T length() const
+	float length() const
 	{
-		return x * x + y * y;
+		return std::sqrt(x * x + y * y);
 	}
 	
 	void add(T a)
 	{
-		std::cerr << "called add\n";
 		x += a;
 		y += a;
-		std::cerr << x << '\n';
-		std::cerr << y << '\n';
 	}
 	
 	T x, y;

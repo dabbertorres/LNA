@@ -28,4 +28,4 @@ What's Working
 
 Examples
 ========
-See <a href="https://github.com/dabbertorres/luapp/blob/master/main.cpp">main.cpp</a> and <a href="https://github.com/dabbertorres/luapp/blob/master/main.lua">Debug/main.lua</a> for examples.
+See <a href="https://github.com/dabbertorres/luapp/blob/master/main.cpp">main.cpp</a> and <a href="https://github.com/dabbertorres/luapp/blob/master/main.lua">main.lua</a> for examples.

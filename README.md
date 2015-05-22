@@ -1,4 +1,4 @@
-luapp
+LNA = Lua is Not an Algorithm
 =====
 
 another C++/Lua binding

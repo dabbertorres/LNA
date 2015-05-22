@@ -5,7 +5,7 @@
 template<typename T>
 struct Vector2
 {
-	Vector2(T i, T j)
+	Vector2(T i = 0, T j = 0)
 	:	x(i),
 		y(j)
 	{}
@@ -88,8 +88,14 @@ int main(int argc, char **argv)
 	Vector2i* vec = luaState["vec"];
 	
 	std::cout	<< "\nC++:\n"
-				<< "vec:x: " << vec->x << '\n'
-				<< "vec:y: " << vec->y << '\n';
+				<< "vec->x: " << vec->x << '\n'
+				<< "vec->y: " << vec->y << '\n';
+				
+	Vector2i vecVal = luaState["vec"];
+	
+	std::cout	<< "\nC++:\n"
+				<< "vecVal.x: " << vecVal.x << '\n'
+				<< "vecVal.y: " << vecVal.y << '\n';
 	
 	std::cout << "\nbool: " << static_cast<bool>(luaState["b"]) << '\n';
 	

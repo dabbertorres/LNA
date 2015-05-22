@@ -121,8 +121,9 @@ namespace lpp
 				luaL_setmetatable(state, Class<T>::getName().c_str());
 				return 1;
 			}
-			else
-				return 0;
+			
+			luaL_error(state, "Attempted push of unknown type.");
+			return 0;
 		}
 		
 		inline int pushValue(lua_State* state, std::nullptr_t)
@@ -251,7 +252,20 @@ namespace lpp
 			if(Class<Type>::isValid())
 				return static_cast<T*>(luaL_checkudata(state, idx, Class<Type>::getName().c_str()));
 			
+			luaL_error(state, "Attempted read of unknown type.");
 			return nullptr;
+		}
+		
+		template<typename T>
+		T checkGet(id<T>, lua_State* state, int idx = -1)
+		{
+			using Type = typename std::remove_const<T>::type;
+			
+			if(Class<Type>::isValid())
+				return *static_cast<T*>(luaL_checkudata(state, idx, Class<Type>::getName().c_str()));
+			
+			luaL_error(state, "Attempted read of unknown type.");
+			return {};
 		}
 		
 		// tuples

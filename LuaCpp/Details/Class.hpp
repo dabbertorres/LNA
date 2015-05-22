@@ -38,15 +38,18 @@ namespace lpp
 			template<typename Ret, typename... Args>
 			void addMember(const std::string& funcName, Ret (CppClass::*func)(Args...));
 			
+			template<typename Ret, typename... Args>
+			void addMember(const std::string& funcName, Ret (CppClass::*func)(Args...) const);
+			
 			// add variables
 			// note: Lua can't access variables, only functions.
 			// so, we create a getter function with the same name as the variable
 			// and if the variables is NOT const, adds a setter named: "set_<var name>"
 			// which takes a parameter of the same type as the variable
-			template<typename T, typename std::enable_if<!std::is_const<T>::value>::type* = nullptr>	// non-const members
+			template<typename T, typename std::enable_if<!std::is_const<T>::value && !std::is_function<T>::value>::type* = nullptr>	// non-const members
 			void addMember(const std::string& name, T CppClass::*t);
 			
-			template<typename T, typename std::enable_if<std::is_const<T>::value>::type* = nullptr>		// const members
+			template<typename T, typename std::enable_if<std::is_const<T>::value && !std::is_function<T>::value>::type* = nullptr>		// const members
 			void addMember(const std::string& name, T CppClass::*t);
 			
 			// called "new" in Lua, used as: "Class.new(args...)"
@@ -128,12 +131,22 @@ namespace lpp
 	{
 		// push and set to the table
 		lua_pushstring(state, funcName.c_str());
-		functions->emplace_back(new CppFunction<Ret, CppClass, Args...>(state, func));	// closure is now on stack
+		functions->emplace_back(new CppFunction<Ret, CppClass*, Args...>(state, func));	// closure is now on stack
 		lua_rawset(state, -3);
 	}
 	
 	template<typename CppClass>
-	template<typename T, typename std::enable_if<!std::is_const<T>::value>::type*>
+	template<typename Ret, typename... Args>
+	void Class<CppClass>::addMember(const std::string& funcName, Ret (CppClass::*func)(Args...) const)
+	{
+		// push and set to the table
+		lua_pushstring(state, funcName.c_str());
+		functions->emplace_back(new CppFunction<Ret, CppClass*, Args...>(state, func));	// closure is now on stack
+		lua_rawset(state, -3);
+	}
+	
+	template<typename CppClass>
+	template<typename T, typename std::enable_if<!std::is_const<T>::value && !std::is_function<T>::value>::type*>
 	void Class<CppClass>::addMember(const std::string& name, T CppClass::*t)
 	{
 		// Lua works with member functions by having the first parameter be a pointer
@@ -162,7 +175,7 @@ namespace lpp
 	}
 	
 	template<typename CppClass>
-	template<typename T, typename std::enable_if<std::is_const<T>::value>::type*>
+	template<typename T, typename std::enable_if<std::is_const<T>::value && !std::is_function<T>::value>::type*>
 	void Class<CppClass>::addMember(const std::string& name, T CppClass::*t)
 	{
 		std::function<T(const CppClass*)> getter = [=](const CppClass* self)

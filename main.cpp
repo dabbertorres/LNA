@@ -15,6 +15,15 @@ struct Vector2
 		return x * x + y * y;
 	}
 	
+	void add(T a)
+	{
+		std::cerr << "called add\n";
+		x += a;
+		y += a;
+		std::cerr << x << '\n';
+		std::cerr << y << '\n';
+	}
+	
 	T x, y;
 };
 
@@ -50,7 +59,7 @@ int main(int argc, char **argv)
 	luaState.openLib("table", luaopen_table);
 	luaState.openLib("debug", luaopen_debug);
 	
-	luaState["Vector2i"].setClass<Vector2i, int, int>("x", &Vector2i::x, "y", &Vector2i::y);
+	luaState["Vector2i"].setClass<Vector2i, int, int>("x", &Vector2i::x, "y", &Vector2i::y, "length", &Vector2i::length, "add", &Vector2i::add);
 	
 	luaState["dot"] = &dot;
 	luaState["dotVec"] = &dotVec;

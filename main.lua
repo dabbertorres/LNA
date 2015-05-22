@@ -15,6 +15,20 @@ vec = Vector2i.new(5, 3)
 print("\nLua:")
 print("vec:x: "..vec:x())
 print("vec:y: "..vec:y())
+print("vec:length: "..vec:length())
+vec:add(7)
+print("vec:length: "..vec:length())
+print("vec:x: "..vec:x())
+print("vec:y: "..vec:y()..'\n')
+
+vecOther = Vector2i.new(15, 7)
+print("vecOther:x: "..vecOther:x())
+print("vecOther:y: "..vecOther:y())
+print("vecOther:length: "..vecOther:length())
+vecOther:add(7)
+print("vecOther:length: "..vecOther:length())
+print("vecOther:x: "..vecOther:x())
+print("vecOther:y: "..vecOther:y())
 
 nums = {3, 2, 1}
 

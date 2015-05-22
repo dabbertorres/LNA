@@ -3,7 +3,7 @@ LNA = Lua is Not an Algorithm
 
 another C++/Lua binding
 
-Heavily inspired by <a href="https://github.com/jeremyong/Selene">Selene</a>.
+Syntax is heavily inspired by <a href="https://github.com/jeremyong/Selene">Selene</a>.
 
 Main difference is that I'm starting off trying to cross the bridge between 
 std containers and Lua tables. We'll see how that goes. 

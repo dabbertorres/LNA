@@ -21,6 +21,10 @@ Otherwise, it's header only (due to being template heavy).
 
 Also: RTTI is NOT required. :)
 
+Am I working?
+=============
+[![Build Status](https://travis-ci.org/dabbertorres/LNA.svg)](https://travis-ci.org/dabbertorres/LNA)
+
 What's Working
 ==============
 - Getting variables/values to/from Lua/C++

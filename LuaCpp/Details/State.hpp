@@ -36,7 +36,7 @@ namespace lpp
 			decltype(LUA_OK) run();
 			
 			// add Lua libraries to the lua_State
-			void openLib(const std::string& name, lua_CFunction open);
+			void openLib(const std::string& name, const lua_CFunction& open);
 			
 			// select a global variable
 			Selection operator[](const std::string& name);
@@ -88,9 +88,14 @@ namespace lpp
 		return lua_pcall(state, 0, 0, 0);
 	}
 	
-	inline void State::openLib(const std::string& name, lua_CFunction open)
+	inline void State::openLib(const std::string& name, const lua_CFunction& open)
 	{
+#if LUA_VERSION_NUM >= 502
 		luaL_requiref(state, name.c_str(), open, 1);
+#else
+		lua_pushcfunction(state, open);
+		lua_pcall(state, 0, 0, 0);
+#endif
 		clean();
 	}
 	

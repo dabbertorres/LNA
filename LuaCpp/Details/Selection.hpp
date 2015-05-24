@@ -10,6 +10,10 @@
 #include "Class.hpp"
 #include "CppFunction.hpp"
 
+#if LUA_VERSION_NUM < 502
+#	define LUA_OK 0
+#endif
+
 namespace lpp
 {
 	class Selection

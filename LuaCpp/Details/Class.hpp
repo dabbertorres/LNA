@@ -82,7 +82,7 @@ namespace lpp
 		lua_pushvalue(state, -2);			// put another copy of the metatable on the stack
 		lua_rawset(state, -3);
 		
-		// create Lua's constructor
+		// create Lua's constructor for this class
 		lua_pushstring(state, "new");							// function name
 		lua_pushcfunction(state, &newInstance<CstrArgs...>);	// push the constructor
 		lua_rawset(state, -3);
@@ -200,8 +200,12 @@ namespace lpp
 		factory(c, args, typename detail::indicesBuilder<sizeof...(CstrArgs)>::type{});
 		
 		// set our userdata to this type
+#if LUA_VERSION_NUM >= 502
 		luaL_setmetatable(s, className.c_str());
-		
+#else
+		luaL_getmetatable(s, className.c_str());
+		lua_setmetatable(s, -2);
+#endif
 		return 1;
 	}
 	

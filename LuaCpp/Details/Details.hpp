@@ -109,7 +109,7 @@ namespace lpp
 		}
 
 		// pushing objects
-		template<typename T>
+		template<typename T, typename std::enable_if<!std::is_pod<T>::value>::type* = nullptr>
 		int pushValue(lua_State* state, const T& t)
 		{
 			// if such a type has been exposed to Lua, push it and give it 
@@ -118,7 +118,14 @@ namespace lpp
 				// create new T, and call it's copy constructor with the passed object
 				void* addr = lua_newuserdata(state, sizeof(Class<T>));
 				Class<T>::copy(addr, t);
+				
+#if LUA_VERSION_NUM >= 502
 				luaL_setmetatable(state, Class<T>::getName().c_str());
+#else
+				luaL_getmetatable(state, Class<T>::getName().c_str());
+				lua_setmetatable(state, -2);
+#endif
+
 				return 1;
 			}
 			
@@ -132,7 +139,7 @@ namespace lpp
 			return 1;
 		}
 		
-		template<typename T>
+		template<typename T, typename std::enable_if<!std::is_pod<T>::value>::type* = nullptr>
 		int pushValue(lua_State* state, T* t)
 		{
 			lua_pushlightuserdata(state, t);
@@ -195,8 +202,11 @@ namespace lpp
 
 			std::vector<T> newVec;
 
+#if LUA_VERSION_NUM >= 502
 			std::size_t tableLength = lua_rawlen(state, idx);
-
+#else
+			std::size_t tableLength = lua_objlen(state, idx);
+#endif
 			for(unsigned int i = 1; i <= tableLength; i++)
 			{
 				lua_rawgeti(state, idx, i);
@@ -244,7 +254,7 @@ namespace lpp
 		}
 		
 		// objects
-		template<typename T>
+		template<typename T, typename std::enable_if<!std::is_pod<T>::value>::type* = nullptr>
 		T* checkGet(id<T*>, lua_State* state, int idx = -1)
 		{
 			using Type = typename std::remove_const<T>::type;
@@ -256,7 +266,7 @@ namespace lpp
 			return nullptr;
 		}
 		
-		template<typename T>
+		template<typename T, typename std::enable_if<!std::is_pod<T>::value>::type* = nullptr>
 		T checkGet(id<T>, lua_State* state, int idx = -1)
 		{
 			using Type = typename std::remove_const<T>::type;

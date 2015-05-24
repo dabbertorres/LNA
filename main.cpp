@@ -11,7 +11,7 @@ struct Vector2
 		y(j)
 	{}
 	
-	float length() const
+	lua_Number length() const
 	{
 		return std::sqrt(x * x + y * y);
 	}
@@ -27,12 +27,12 @@ struct Vector2
 
 using Vector2i = Vector2<int>;
 
-float dot(float oneX, float oneY, float twoX, float twoY)
+lua_Number dot(lua_Number oneX, lua_Number oneY, lua_Number twoX, lua_Number twoY)
 {
 	return oneX * twoX + oneY * twoY;
 }
 
-float dotVec(const Vector2i* one, const Vector2i* two)
+lua_Number dotVec(const Vector2i* one, const Vector2i* two)
 {
 	return one->x * two->x + one->y * two->y;
 }

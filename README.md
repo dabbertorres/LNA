@@ -11,10 +11,9 @@ std containers and Lua tables. We'll see how that goes.
 
 Requirements
 ============
-Lua 5.2+ at the moment, 5.1 support (for LuaJIT) is being worked on.
-Planning on just using #ifdef's to control which API calls are used, something like: "#ifdef LNA_LUA_51" should work fine I think. Feel free to speak up <a href="https://github.com/dabbertorres/LNA/issues/2">here</a> if you feel otherwise.
+Lua 5.1+
 
-C++ 11 & 14 features are used, including constexpr, so you'll need a pretty decent standards compliant compiler. (Off the top of my head, this makes VS 2013 not usable, but g++ and clang should do just fine.)
+C++ 11 & 14 features are used, including constexpr, so you'll need a pretty decent standards compliant compiler. (Off the top of my head, this makes VS 2013 not usable (VS 2015 should work I think), but g++ and clang should do just fine.)
 
 All you need then is a working Lua install, and to link to Lua in your final application, and it should be good to go.
 Otherwise, it's header only (due to being template heavy).

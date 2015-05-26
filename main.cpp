@@ -78,6 +78,11 @@ int main(int argc, char **argv)
 	luaState["vec1"] = Vector2i{14, 19};
 	luaState["vec2"] = Vector2i{12, 13};
 	
+	Vector2i vec3(93, 7);
+	luaState["vec3"] = &vec3;
+	vec3.x = 74;
+	luaState("print(\"vec3:x: \"..vec3:x())");
+	
 	// load a file and catch syntax errors
 	if(luaState.loadFile("main.lua") != LUA_OK)
 	{

@@ -142,8 +142,22 @@ namespace lna
 		template<typename T, typename std::enable_if<std::is_class<T>::value>::type* = nullptr>
 		int pushValue(lua_State* state, T* t)
 		{
-			lua_pushlightuserdata(state, t);
-			return 1;
+			if(Class<T>::isValid())
+			{
+				lua_pushlightuserdata(state, t);
+				
+#if LUA_VERSION_NUM >= 502
+				luaL_setmetatable(state, Class<T>::getName().c_str());
+#else
+				luaL_getmetatable(state, Class<T>::getName().c_str());
+				lua_setmetatable(state, -2);
+#endif
+				
+				return 1;
+			}
+			
+			luaL_error(state, "Attempted push of unknown type.");
+			return 0;
 		}
 		
 		// recursive argument distribution

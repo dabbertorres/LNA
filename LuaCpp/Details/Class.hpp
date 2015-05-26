@@ -46,11 +46,11 @@ namespace lna
 			// so, we create a getter function with the same name as the variable
 			// and if the variables is NOT const, adds a setter named: "set_<var name>"
 			// which takes a parameter of the same type as the variable
-			template<typename T, typename std::enable_if<!std::is_const<T>::value && !std::is_function<T>::value>::type* = nullptr>	// non-const members
+			template<typename T>
 			void addMember(const std::string& name, T CppClass::*t);
 			
-			template<typename T, typename std::enable_if<std::is_const<T>::value && !std::is_function<T>::value>::type* = nullptr>		// const members
-			void addMember(const std::string& name, T CppClass::*t);
+			template<typename T>
+			void addMember(const std::string& name, const T CppClass::*t);
 			
 			// called "new" in Lua, used as: "Class(args...)"
 			template<typename... CstrArgs>
@@ -155,7 +155,7 @@ namespace lna
 	}
 	
 	template<typename CppClass>
-	template<typename T, typename std::enable_if<!std::is_const<T>::value && !std::is_function<T>::value>::type*>
+	template<typename T>
 	void Class<CppClass>::addMember(const std::string& name, T CppClass::*t)
 	{
 		// Lua works with member functions by having the first parameter be a pointer
@@ -184,8 +184,8 @@ namespace lna
 	}
 	
 	template<typename CppClass>
-	template<typename T, typename std::enable_if<std::is_const<T>::value && !std::is_function<T>::value>::type*>
-	void Class<CppClass>::addMember(const std::string& name, T CppClass::*t)
+	template<typename T>
+	void Class<CppClass>::addMember(const std::string& name, const T CppClass::*t)
 	{
 		std::function<T(const CppClass*)> getter = [=](const CppClass* self)
 		{

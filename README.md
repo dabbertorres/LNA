@@ -1,6 +1,6 @@
 LNA = Lua is Not an Acronym
 =====
-(Amazing how many people use Lua as an Acronym)
+(Amazing how many people use Lua as LUA)
 
 Yet another C++/Lua binding
 
@@ -11,8 +11,7 @@ std containers and Lua tables. We'll see how that goes.
 
 Requirements
 ============
-Lua 5.2+ at the moment, 5.1 support (for LuaJIT) is being worked on.
-Planning on just using #ifdef's to control which API calls are used, something like: "#ifdef LNA_LUA_51" should work fine I think. Feel free to speak up <a href="https://github.com/dabbertorres/LNA/issues/2">here</a> if you feel otherwise.
+Lua 5.1 or higher
 
 C++ 11 & 14 features are used, including constexpr, so you'll need a pretty decent standards compliant compiler. (Off the top of my head, this makes VS 2013 not usable, but g++ and clang should do just fine.)
 

@@ -30,7 +30,7 @@ print("vecOther:length: "..vecOther:length())
 print("vecOther:x: "..vecOther:x())
 print("vecOther:y: "..vecOther:y())
 
-print("dotVec: "..dotVec(vec, vecOther))
+print("\ndotVec: "..dotVec(vec, vecOther))
 
 nums = {3, 2, 1}
 

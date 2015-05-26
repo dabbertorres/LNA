@@ -49,7 +49,7 @@ std::tuple<int, int> twoNums()
 
 int main(int argc, char **argv)
 {
-	lpp::State luaState;
+	lna::State luaState;
 
 	luaState.openLib("base", luaopen_base);
 	luaState.openLib("math", luaopen_math);
@@ -141,7 +141,7 @@ int main(int argc, char **argv)
 	std::cout << hello << "\n\n";
 	
 	int one, two;
-	lpp::tie(luaState["return2Nums"](), one, two);
+	lna::tie(luaState["return2Nums"](), one, two);
 	
 	std::cout << "one: " << one << '\n';
 	std::cout << "two: " << two << '\n';

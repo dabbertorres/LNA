@@ -3,7 +3,7 @@
 
 #include "Details/State.hpp"
 
-namespace lpp
+namespace lna
 {
 	template<typename F>
 	F tieAssign(F v, F& r)

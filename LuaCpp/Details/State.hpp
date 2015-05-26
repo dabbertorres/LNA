@@ -7,7 +7,7 @@
 
 #include "Selection.hpp"
 
-namespace lpp
+namespace lna
 {
 	class State
 	{

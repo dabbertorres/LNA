@@ -7,7 +7,7 @@
 #include <map>
 #include <functional>
 
-namespace lpp
+namespace lna
 {
 	template<typename T>
 	class Class;
@@ -109,7 +109,7 @@ namespace lpp
 		}
 
 		// pushing objects
-		template<typename T, typename std::enable_if<!std::is_pod<T>::value>::type* = nullptr>
+		template<typename T, typename std::enable_if<std::is_class<T>::value>::type* = nullptr>
 		int pushValue(lua_State* state, const T& t)
 		{
 			// if such a type has been exposed to Lua, push it and give it 
@@ -139,7 +139,7 @@ namespace lpp
 			return 1;
 		}
 		
-		template<typename T, typename std::enable_if<!std::is_pod<T>::value>::type* = nullptr>
+		template<typename T, typename std::enable_if<std::is_class<T>::value>::type* = nullptr>
 		int pushValue(lua_State* state, T* t)
 		{
 			lua_pushlightuserdata(state, t);

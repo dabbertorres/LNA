@@ -8,7 +8,7 @@
 
 #include "CppFunction.hpp"
 
-namespace lpp
+namespace lna
 {
 	template<typename CppClass>
 	class Class
@@ -52,7 +52,7 @@ namespace lpp
 			template<typename T, typename std::enable_if<std::is_const<T>::value && !std::is_function<T>::value>::type* = nullptr>		// const members
 			void addMember(const std::string& name, T CppClass::*t);
 			
-			// called "new" in Lua, used as: "Class.new(args...)"
+			// called "new" in Lua, used as: "Class(args...)"
 			template<typename... CstrArgs>
 			static int newInstance(lua_State* s);
 			
@@ -74,23 +74,32 @@ namespace lpp
 		className = n;
 		functions = &fmap;
 		
-		// put metatable on stack
-		luaL_getmetatable(state, className.c_str());
+		// create the metatable for our class
+		luaL_newmetatable(state, className.c_str());
+		
+		// create Lua's constructor for this class
+		lua_pushstring(state, "__call");
+		lua_pushcfunction(state, &newInstance<CstrArgs...>);
+		lua_rawset(state, -3);
 		
 		// assigning the __index metamethod of the metatable to the metatable
 		lua_pushstring(state, "__index");
 		lua_pushvalue(state, -2);			// put another copy of the metatable on the stack
 		lua_rawset(state, -3);
 		
-		// create Lua's constructor for this class
-		lua_pushstring(state, "new");							// function name
-		lua_pushcfunction(state, &newInstance<CstrArgs...>);	// push the constructor
-		lua_rawset(state, -3);
-		
 		// add all members
 		addMembers(mems...);
 		
-		lua_pop(state, 1);	// pop the metatable from the stack
+		// set the metatable of our class' metatable to className_meta
+#if LUA_VERSION_NUM >= 502
+		luaL_setmetatable(s, className.c_str());
+#else
+		luaL_getmetatable(s, className.c_str());
+		lua_setmetatable(s, -2);
+#endif
+		
+		// gives Lua access to the table
+		lua_setglobal(state, className.c_str());
 		
 		valid = true;		// let it be known this class exists in Lua!
 	}
@@ -160,7 +169,7 @@ namespace lpp
 		
 		std::string setterName = "set_" + name;
 		lua_pushstring(state, setterName.c_str());
-		functions->emplace_back(new CppFunction<void, CppClass*, T>(state, setter));
+		functions->emplace_back(new CppFunction<void, CppClass*, T>(state, setter));	// closure is now on stack
 		lua_rawset(state, -3);
 		
 		// getter
@@ -170,7 +179,7 @@ namespace lpp
 		};
 		
 		lua_pushstring(state, name.c_str());
-		functions->emplace_back(new CppFunction<T, const CppClass*>(state, getter));
+		functions->emplace_back(new CppFunction<T, const CppClass*>(state, getter));	// closure is now on stack
 		lua_rawset(state, -3);
 	}
 	
@@ -184,7 +193,7 @@ namespace lpp
 		};
 		
 		lua_pushstring(state, name.c_str());
-		functions->emplace_back(new CppFunction<T, const CppClass*>(state, getter));
+		functions->emplace_back(new CppFunction<T, const CppClass*>(state, getter));	// closure is now on stack
 		lua_rawset(state, -3);
 	}
 	
@@ -192,7 +201,10 @@ namespace lpp
 	template<typename... CstrArgs>
 	int Class<CppClass>::newInstance(lua_State* s)
 	{
+		constexpr int nargs = sizeof...(CstrArgs);
 		std::tuple<CstrArgs...> args = detail::getTuple<CstrArgs...>(s);
+		
+		lua_pop(s, 1 + nargs);	// pop the args, plus the "self" value
 		
 		// make our new class in Lua
 		void* c = lua_newuserdata(s, sizeof(CppClass));
@@ -206,6 +218,7 @@ namespace lpp
 		luaL_getmetatable(s, className.c_str());
 		lua_setmetatable(s, -2);
 #endif
+		
 		return 1;
 	}
 	
@@ -213,7 +226,7 @@ namespace lpp
 	template<typename... CstrArgs, int... N>
 	void Class<CppClass>::factory(void* addr, const std::tuple<CstrArgs...>& args, detail::indices<N...>)
 	{
-		// placement new to put a new instance of our class at the space Lua allocated
+		// placement new to put a new instance of our class at the space Lua allocated for us
 		new (addr) CppClass(std::get<N>(args)...);
 	}
 	

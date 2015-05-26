@@ -7,7 +7,7 @@
 
 #include "Details.hpp"
 
-namespace lpp
+namespace lna
 {
 	// base class for all C++ functions that can be called by Lua.
 	// this gives a common way to store all functions

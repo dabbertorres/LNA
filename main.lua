@@ -10,7 +10,7 @@ end
 
 b = true
 
-vec = Vector2i.new(5, 3)
+vec = Vector2i(5, 3)
 
 print("\nLua:")
 print("vec:x: "..vec:x())
@@ -21,7 +21,7 @@ print("vec:length: "..vec:length())
 print("vec:x: "..vec:x())
 print("vec:y: "..vec:y()..'\n')
 
-vecOther = Vector2i.new(15, 7)
+vecOther = Vector2i(15, 7)
 print("vecOther:x: "..vecOther:x())
 print("vecOther:y: "..vecOther:y())
 print("vecOther:length: "..vecOther:length())

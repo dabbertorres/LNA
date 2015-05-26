@@ -14,7 +14,7 @@
 #	define LUA_OK 0
 #endif
 
-namespace lpp
+namespace lna
 {
 	class Selection
 	{
@@ -79,13 +79,6 @@ namespace lpp
 	template<typename T, typename... Args, typename... Funcs>
 	void Selection::setClass(Funcs... funcs)
 	{
-		// will create a new metatable of this name if needed, and then pushes it to the stack
-		// if such a metatable already exists, just pushes that to the stack
-		luaL_newmetatable(state, name.c_str());
-		
-		// gives Lua access to the table
-		lua_setglobal(state, name.c_str());
-		
 		// initialize the Class for Lua
 		Class<T>(state, name, std::tuple<Args...>{}, functions, funcs...);
 	}
